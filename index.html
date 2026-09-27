@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathQuest Pro | إدارة كاملة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+:root {
+  --primary: #00d4ff; --secondary: #ff6b9d; --accent: #ffd700;
+  --accent-dark: #ff8c00; --danger: #ff4757; --purple: #a855f7;
+  --green: #22c55e; --bg-dark: #0a0e1a; --glass: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.12); --text: #ffffff; --text-muted: #94a3b8;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg-dark); min-height: 100vh; color: var(--text); overflow-x: hidden; position: relative; font-family: 'Tajawal', sans-serif; }
+body::before {
+  content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle at 20% 30%, rgba(0,212,255,0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(255,107,157,0.12) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(255,215,0,0.08) 0%, transparent 50%);
+  animation: bgFloat 25s ease-in-out infinite; z-index: -2;
+}
+@keyframes bgFloat { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(-30px,30px) rotate(180deg); } }
+.floating-icons { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+.floating-icon { position: absolute; font-size: 2rem; opacity: 0.12; animation: floatAround 20s ease-in-out infinite; }
+@keyframes floatAround { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-50px,-150px); } }
+.screen { display: none; min-height: 100vh; padding: 20px; animation: pageIn 0.5s; position: relative; z-index: 1; }
+.screen.active { display: block; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+#loginScreen, #signupScreen, #teacherLoginScreen { display: none; align-items: center; justify-content: center; min-height: 100vh; }
+#loginScreen.active, #signupScreen.active, #teacherLoginScreen.active { display: flex; }
+.login-wrapper { width: 100%; max-width: 520px; }
+.login-box { background: rgba(17,24,39,0.85); backdrop-filter: blur(30px); padding: 45px 35px; border-radius: 30px; text-align: center; border: 1px solid rgba(0,212,255,0.3); box-shadow: 0 30px 80px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+.login-logo { font-size: 5rem; margin-bottom: 10px; filter: drop-shadow(0 0 40px rgba(0,212,255,0.7)); animation: logoPulse 3s infinite; }
+@keyframes logoPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1) rotate(5deg); } }
+.login-box h1 { font-size: 2.5rem; margin-bottom: 8px; font-weight: 900; background: linear-gradient(135deg, #00d4ff, #ff6b9d, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.subtitle { color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem; }
+.input-group { position: relative; margin-bottom: 12px; }
+.input-group-icon { position: absolute; top: 50%; right: 18px; transform: translateY(-50%); font-size: 1.2rem; opacity: 0.7; }
+.login-input { width: 100%; padding: 16px 50px 16px 20px; border-radius: 14px; border: 2px solid var(--glass-border); background: rgba(0,0,0,0.35); color: var(--text); font-size: 1rem; transition: all 0.3s; font-family: 'Tajawal'; }
+.login-input:focus { outline: none; border-color: var(--primary); background: rgba(0,212,255,0.08); box-shadow: 0 0 0 4px rgba(0,212,255,0.15); }
+.btn-primary { width: 100%; padding: 16px; border-radius: 14px; border: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0e1a; font-size: 1.1rem; font-weight: 900; cursor: pointer; transition: all 0.3s; font-family: 'Tajawal'; margin-top: 5px; }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(0,212,255,0.5); }
+.btn-secondary { width: 100%; padding: 13px; border-radius: 14px; margin-top: 10px; border: 2px solid rgba(255,107,157,0.4); background: rgba(255,107,157,0.08); color: var(--secondary); font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: 'Tajawal'; }
+.teacher-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 15px; color: var(--accent); cursor: pointer; font-size: 0.9rem; font-weight: 700; padding: 10px 20px; border-radius: 12px; background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.25); }
+.error-msg { margin-top: 10px; color: var(--danger); font-weight: 700; font-size: 0.9rem; display: none; padding: 10px; background: rgba(255,71,87,0.1); border-radius: 10px; }
+.error-msg.show { display: block; }
+.lang-switch { position: fixed; top: 15px; left: 15px; z-index: 999; display: flex; gap: 5px; background: rgba(17,24,39,0.9); backdrop-filter: blur(15px); padding: 6px; border-radius: 14px; border: 1px solid var(--glass-border); }
+.lang-btn { padding: 8px 14px; border-radius: 10px; border: none; background: transparent; color: var(--text-muted); font-weight: 900; cursor: pointer; font-family: 'Tajawal'; font-size: 0.8rem; }
+.lang-btn.active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0e1a; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; background: rgba(17,24,39,0.85); backdrop-filter: blur(25px); border-radius: 22px; margin-bottom: 20px; border: 1px solid var(--glass-border); flex-wrap: wrap; gap: 12px; }
+.user-info { display: flex; align-items: center; gap: 12px; }
+.profile-avatar-small { width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #0a0e1a; overflow: hidden; border: 3px solid rgba(0,212,255,0.5); flex-shrink: 0; }
+.profile-avatar-small img { width: 100%; height: 100%; object-fit: cover; }
+.user-details { display: flex; flex-direction: column; gap: 4px; }
+#userNameDisplay { font-size: 1.1rem; font-weight: 700; }
+.title-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); border-radius: 20px; font-size: 0.8rem; font-weight: 900; color: #0a0e1a; width: fit-content; }
+.header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.streak-box, .points-box { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 900; padding: 10px 16px; border-radius: 14px; white-space: nowrap; }
+.streak-box { color: var(--accent-dark); background: rgba(255,140,0,0.15); border: 1px solid rgba(255,140,0,0.3); }
+.points-box { color: var(--primary); background: rgba(0,212,255,0.12); border: 1px solid rgba(0,212,255,0.3); }
+.btn-logout-icon { width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,71,87,0.4); background: rgba(255,71,87,0.1); color: var(--danger); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.progress-container { background: rgba(17,24,39,0.7); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px 25px; margin-bottom: 20px; border: 1px solid var(--glass-border); }
+.progress-bar { height: 16px; background: linear-gradient(90deg, var(--primary), var(--secondary), var(--purple), var(--accent)); border-radius: 12px; width: 0%; transition: width 1.5s; box-shadow: 0 0 25px rgba(0,212,255,0.6); }
+.progress-text { margin-top: 12px; font-size: 0.9rem; color: var(--text-muted); text-align: center; font-weight: 600; }
+.tabs { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; justify-content: center; padding: 8px; background: rgba(17,24,39,0.6); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); }
+.tab { padding: 12px 18px; border-radius: 14px; border: none; background: transparent; color: var(--text-muted); font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: 'Tajawal'; transition: all 0.3s; }
+.tab:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+.tab.active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0e1a; }
+.tab-content { display: none; animation: tabIn 0.5s; }
+.tab-content.active { display: block; }
+@keyframes tabIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.tab-content h2 { margin-bottom: 25px; font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, #fff, #00d4ff, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+.stat-card { background: rgba(17,24,39,0.7); backdrop-filter: blur(20px); padding: 25px 20px; border-radius: 20px; text-align: center; border: 1px solid var(--glass-border); transition: all 0.3s; }
+.stat-card:hover { transform: translateY(-8px); border-color: rgba(0,212,255,0.4); }
+.stat-card .stat-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.stat-card h3 { font-size: 2.2rem; color: var(--primary); margin-bottom: 6px; font-weight: 900; }
+.stat-card p { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
+.grade-selector { text-align: center; padding: 30px 20px; }
+.grade-selector .intro-icon { font-size: 4rem; margin-bottom: 15px; }
+.grade-selector p { margin-bottom: 30px; font-size: 1.1rem; color: var(--text-muted); font-weight: 600; }
+.grade-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; max-width: 700px; margin: 0 auto; }
+.grade-btn { padding: 30px 20px; border-radius: 20px; border: 2px solid rgba(0,212,255,0.25); background: rgba(0,212,255,0.06); color: var(--text); font-size: 1.1rem; font-weight: 900; cursor: pointer; font-family: 'Tajawal'; transition: all 0.3s; }
+.grade-btn:hover { background: rgba(0,212,255,0.15); transform: translateY(-6px); border-color: var(--primary); }
+.grade-btn .grade-icon { display: block; font-size: 2.2rem; margin-bottom: 10px; }
+.grade-btn .grade-sub { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; font-weight: 500; }
+.question-card { background: rgba(17,24,39,0.85); backdrop-filter: blur(25px); padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border); max-width: 900px; margin: 0 auto; box-shadow: 0 25px 70px rgba(0,0,0,0.5); }
+.question-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+.q-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+.q-badge.easy { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.4); }
+.q-badge.medium { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); }
+.q-badge.hard { background: rgba(255,71,87,0.2); color: #ff4757; border: 1px solid rgba(255,71,87,0.4); }
+.q-badge.daily { background: rgba(168,85,247,0.2); color: #a855f7; border: 1px solid rgba(168,85,247,0.4); }
+.q-badge.quiz { background: rgba(255,215,0,0.2); color: #ffd700; border: 1px solid rgba(255,215,0,0.4); }
+.question-number { display: inline-flex; align-items: center; gap: 8px; color: var(--accent); font-weight: 900; margin-bottom: 18px; font-size: 0.9rem; padding: 8px 18px; background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.35); border-radius: 20px; }
+.question-card h3 { font-size: 1.3rem; line-height: 1.7; margin-bottom: 25px; font-weight: 700; position: relative; padding-right: 18px; }
+.question-card h3::before { content: ''; position: absolute; right: 0; top: 8px; width: 5px; height: calc(100% - 16px); background: linear-gradient(180deg, var(--primary), var(--secondary)); border-radius: 4px; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-btn { padding: 18px 22px; border-radius: 14px; border: 2px solid var(--glass-border); background: rgba(255,255,255,0.04); color: var(--text); font-size: 1rem; text-align: right; cursor: pointer; font-family: 'Tajawal'; font-weight: 600; display: flex; align-items: center; gap: 15px; transition: all 0.3s; }
+.option-btn .option-letter { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(0,212,255,0.12); border: 2px solid rgba(0,212,255,0.35); font-weight: 900; flex-shrink: 0; }
+.option-btn:hover:not(:disabled) { background: rgba(0,212,255,0.1); border-color: var(--primary); transform: translateX(-8px); }
+.option-btn.correct { background: rgba(0,255,136,0.2); border-color: #00ff88; }
+.option-btn.correct .option-letter { background: #00ff88; color: #0a0e1a; }
+.option-btn.wrong { background: rgba(255,71,87,0.2); border-color: var(--danger); }
+.option-btn.wrong .option-letter { background: var(--danger); color: #fff; }
+.option-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+.hint-section { margin-top: 18px; padding: 18px 20px; border-radius: 14px; background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.35); display: none; }
+.hint-section.show { display: block; }
+.hint-section h4 { color: var(--accent); margin-bottom: 8px; }
+.hint-section p { line-height: 1.6; color: #e2e8f0; }
+.feedback { margin-top: 18px; padding: 20px; border-radius: 16px; font-size: 1rem; font-weight: 700; display: none; }
+.feedback.show { display: block; }
+.feedback.success { background: rgba(0,255,136,0.15); color: #00ff88; border: 1px solid rgba(0,255,136,0.4); }
+.feedback.error { background: rgba(255,71,87,0.15); color: var(--danger); border: 1px solid rgba(255,71,87,0.4); }
+.question-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.hint-btn { flex: 1; min-width: 160px; padding: 14px; border-radius: 12px; border: 2px solid var(--accent); background: rgba(255,215,0,0.1); color: var(--accent); font-size: 0.95rem; font-weight: 900; cursor: pointer; font-family: 'Tajawal'; }
+.hint-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+#nextBtn { flex: 1; min-width: 180px; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--purple), var(--secondary)); color: #fff; font-size: 0.95rem; font-weight: 900; cursor: pointer; font-family: 'Tajawal'; }
+.leaderboard-list { display: flex; flex-direction: column; gap: 10px; }
+.leaderboard-item { display: flex; align-items: center; gap: 15px; padding: 14px 18px; border-radius: 16px; background: rgba(17,24,39,0.7); border: 1px solid var(--glass-border); }
+.leaderboard-item.me { background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(255,107,157,0.1)); border-color: var(--primary); }
+.leaderboard-item .rank-badge { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; flex-shrink: 0; background: rgba(255,255,255,0.08); }
+.leaderboard-item .rank-badge.gold { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #0a0e1a; }
+.leaderboard-item .rank-badge.silver { background: linear-gradient(135deg, #c0c0c0, #808080); color: #0a0e1a; }
+.leaderboard-item .rank-badge.bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #fff; }
+.leaderboard-item .lb-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #0a0e1a; overflow: hidden; flex-shrink: 0; }
+.leaderboard-item .lb-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.leaderboard-item .lb-info { flex: 1; }
+.leaderboard-item .lb-name { font-weight: 900; font-size: 1rem; margin-bottom: 3px; }
+.leaderboard-item .lb-title { font-size: 0.8rem; color: var(--text-muted); }
+.leaderboard-item .lb-points { font-weight: 900; color: var(--primary); font-size: 1.1rem; }
+.certificate-card { background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,140,0,0.1)); border: 3px solid var(--accent); border-radius: 22px; padding: 25px; text-align: center; margin-bottom: 18px; }
+.certificate-card h3 { color: var(--accent); font-size: 1.3rem; margin-bottom: 10px; }
+.certificate-card .cert-desc { color: #cbd5e1; margin-bottom: 15px; font-size: 0.9rem; }
+.cert-btn { padding: 12px 28px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #0a0e1a; font-weight: 900; cursor: pointer; font-family: 'Tajawal'; }
+.cert-btn.locked { background: rgba(255,255,255,0.1); color: var(--text-muted); cursor: not-allowed; }
+.mistake-item { padding: 18px; background: rgba(255,71,87,0.08); border: 1px solid rgba(255,71,87,0.25); border-radius: 14px; margin-bottom: 12px; }
+.mistake-item .mistake-q { font-weight: 700; margin-bottom: 10px; color: #fff; }
+.mistake-item .mistake-your { color: #ff8fa0; font-size: 0.9rem; margin-bottom: 6px; }
+.mistake-item .mistake-correct { color: var(--green); font-size: 0.9rem; padding: 8px; background: rgba(0,212,255,0.08); border-radius: 8px; }
+.profile-container { max-width: 700px; margin: 0 auto; background: rgba(17,24,39,0.85); backdrop-filter: blur(25px); border-radius: 28px; padding: 40px 35px; text-align: center; border: 1px solid var(--glass-border); }
+.profile-avatar-large { width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 20px; background: linear-gradient(135deg, var(--primary), var(--secondary), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 4rem; font-weight: 900; color: #0a0e1a; overflow: hidden; border: 5px solid rgba(0,212,255,0.5); position: relative; }
+.profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-upload-btn { position: absolute; bottom: 5px; left: 5px; width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0e1a; border: 4px solid #0a0e1a; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+#avatarInput { display: none; }
+.profile-form { margin-top: 25px; text-align: right; }
+.profile-form label { display: block; color: var(--text-muted); margin-bottom: 8px; font-size: 0.9rem; font-weight: 700; }
+.profile-form input { width: 100%; padding: 14px 18px; border-radius: 12px; border: 2px solid var(--glass-border); background: rgba(0,0,0,0.35); color: var(--text); font-size: 1rem; margin-bottom: 15px; font-family: 'Tajawal'; }
+.profile-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+.btn-save, .btn-logout { flex: 1; min-width: 150px; padding: 14px; border-radius: 12px; font-size: 0.95rem; font-weight: 900; cursor: pointer; font-family: 'Tajawal'; }
+.btn-save { border: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0e1a; }
+.btn-logout { border: 2px solid var(--danger); background: rgba(255,71,87,0.1); color: var(--danger); }
+.store-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+.store-item { background: rgba(17,24,39,0.75); backdrop-filter: blur(20px); border-radius: 22px; padding: 30px 22px; text-align: center; border: 1px solid var(--glass-border); }
+.store-item .icon { font-size: 3.5rem; margin-bottom: 15px; display: inline-block; }
+.store-item h4 { font-size: 1.1rem; margin-bottom: 10px; }
+.store-item .cost { color: var(--accent); font-weight: 900; margin-bottom: 15px; font-size: 1rem; padding: 6px 14px; background: rgba(255,215,0,0.15); border-radius: 18px; display: inline-block; }
+.store-item button { padding: 12px 28px; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0e1a; font-weight: 900; cursor: pointer; font-family: 'Tajawal'; }
+.store-item button:disabled { opacity: 0.35; cursor: not-allowed; }
+.titles-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+.title-card { background: rgba(17,24,39,0.75); padding: 25px 20px; border-radius: 22px; text-align: center; border: 2px solid var(--glass-border); }
+.title-card.unlocked { border-color: rgba(255,215,0,0.5); background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,140,0,0.06)); }
+.title-card.current { border-color: var(--primary); box-shadow: 0 0 40px rgba(0,212,255,0.5); transform: scale(1.05); }
+.title-card .rank { font-size: 3rem; margin-bottom: 10px; display: inline-block; }
+.title-card h4 { font-size: 1.15rem; margin-bottom: 8px; }
+.title-card .req { color: var(--text-muted); font-size: 0.85rem; padding: 5px 12px; background: rgba(255,255,255,0.06); border-radius: 16px; display: inline-block; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+.modal.active { display: flex; }
+.modal-box { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 35px 30px; border-radius: 30px; text-align: center; max-width: 480px; width: 100%; border: 2px solid var(--primary); max-height: 90vh; overflow-y: auto; }
+.modal-box .modal-icon { font-size: 4rem; margin-bottom: 15px; }
+.modal-box h2 { font-size: 1.8rem; margin-bottom: 12px; }
+.modal-box p { margin-bottom: 20px; line-height: 1.6; color: #cbd5e1; }
+.modal-box button { padding: 14px 40px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0e1a; font-weight: 900; font-size: 1rem; cursor: pointer; font-family: 'Tajawal'; }
+.teacher-panel { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.teacher-header { display: flex; justify-content: space-between; align-items: center; background: rgba(17,24,39,0.85); backdrop-filter: blur(25px); padding: 22px 25px; border-radius: 22px; margin-bottom: 22px; border: 1px solid rgba(255,215,0,0.25); flex-wrap: wrap; gap: 15px; }
+.teacher-header h1 { font-size: 1.7rem; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900; }
+.teacher-tabs { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; padding: 8px; background: rgba(17,24,39,0.6); border-radius: 18px; border: 1px solid var(--glass-border); }
+.teacher-tab { padding: 11px 18px; border-radius: 12px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; font-family: 'Tajawal'; font-size: 0.88rem; }
+.teacher-tab.active { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #0a0e1a; }
+.teacher-tab-content { display: none; }
+.teacher-tab-content.active { display: block; }
+.teacher-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 22px; }
+.teacher-stat { background: rgba(17,24,39,0.75); border: 1px solid rgba(255,215,0,0.3); padding: 22px 18px; border-radius: 18px; text-align: center; }
+.teacher-stat h3 { color: var(--accent); font-size: 2rem; margin-bottom: 5px; font-weight: 900; }
+.teacher-stat p { color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
+.charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-bottom: 22px; }
+.chart-card { background: rgba(17,24,39,0.75); border-radius: 20px; padding: 22px; border: 1px solid var(--glass-border); }
+.chart-card h3 { color: var(--primary); margin-bottom: 15px; font-size: 1rem; font-weight: 900; }
+.chart-card canvas { max-height: 260px; }
+.students-table { background: rgba(17,24,39,0.75); backdrop-filter: blur(20px); border-radius: 22px; padding: 22px; overflow-x: auto; border: 1px solid var(--glass-border); }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
+thead { background: rgba(0,212,255,0.12); }
+th, td { padding: 12px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.06); }
+th { color: var(--primary); font-weight: 900; font-size: 0.85rem; cursor: pointer; }
+td { font-size: 0.88rem; font-weight: 600; }
+.student-avatar-cell { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #0a0e1a; overflow: hidden; }
+.student-avatar-cell img { width: 100%; height: 100%; object-fit: cover; }
+.teacher-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.teacher-actions button { padding: 12px 24px; border-radius: 12px; border: none; cursor: pointer; font-weight: 900; font-family: 'Tajawal'; font-size: 0.95rem; }
+.btn-export { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0e1a; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-back { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--glass-border) !important; }
+.btn-add { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #0a0e1a; }
+.class-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.class-card { background: rgba(17,24,39,0.75); border-radius: 20px; padding: 22px; border: 2px solid var(--glass-border); position: relative; }
+.class-card:hover { border-color: rgba(0,212,255,0.4); }
+.class-card h3 { color: var(--primary); font-size: 1.3rem; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.class-card .class-meta { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px; }
+.class-card .class-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.class-card .class-actions button { flex: 1; min-width: 80px; padding: 8px 12px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Tajawal'; font-weight: 700; font-size: 0.8rem; }
+.quiz-builder { background: rgba(17,24,39,0.75); border-radius: 22px; padding: 25px; border: 1px solid var(--glass-border); margin-bottom: 20px; }
+.quiz-builder h3 { color: var(--primary); margin-bottom: 15px; font-size: 1.2rem; }
+.quiz-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+.quiz-form label { display: block; color: var(--text-muted); margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; }
+.quiz-form input, .quiz-form select { width: 100%; padding: 12px 15px; border-radius: 12px; border: 2px solid var(--glass-border); background: rgba(0,0,0,0.35); color: var(--text); font-size: 0.95rem; font-family: 'Tajawal'; }
+.quiz-form input:focus, .quiz-form select:focus { outline: none; border-color: var(--primary); }
+.question-picker { max-height: 400px; overflow-y: auto; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 15px; margin-bottom: 15px; }
+.question-picker-item { padding: 12px 15px; border-radius: 12px; background: rgba(255,255,255,0.04); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; border: 2px solid transparent; cursor: pointer; }
+.question-picker-item:hover { background: rgba(0,212,255,0.08); }
+.question-picker-item.selected { background: rgba(0,212,255,0.15); border-color: var(--primary); }
+.question-picker-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: var(--primary); }
+.question-picker-item .qp-text { flex: 1; font-size: 0.9rem; }
+.quiz-list { display: flex; flex-direction: column; gap: 12px; }
+.quiz-item { background: rgba(17,24,39,0.75); border-radius: 18px; padding: 20px; border: 2px solid var(--glass-border); display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+.quiz-item.active-quiz { border-color: var(--green); background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(0,212,255,0.08)); }
+.quiz-item .quiz-info { flex: 1; min-width: 200px; }
+.quiz-item .quiz-info h4 { color: var(--primary); font-size: 1.1rem; margin-bottom: 5px; }
+.quiz-item .quiz-info p { color: var(--text-muted); font-size: 0.85rem; }
+.quiz-item .quiz-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.quiz-item .quiz-actions button { padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Tajawal'; font-weight: 700; font-size: 0.85rem; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0e1a; padding: 14px 28px; border-radius: 14px; font-weight: 900; z-index: 2000; transition: transform 0.4s; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+.empty-state .empty-icon { font-size: 4rem; margin-bottom: 15px; }
+.daily-card { background: rgba(17,24,39,0.75); backdrop-filter: blur(20px); border-radius: 22px; padding: 25px; border: 1px solid var(--glass-border); max-width: 600px; margin: 0 auto; }
+.day-dot { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; background: rgba(255,255,255,0.06); margin: 3px; }
+.day-dot.today { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #0a0e1a; }
+@media (max-width: 700px) {
+  header { flex-direction: column; text-align: center; }
+  .header-actions { justify-content: center; width: 100%; }
+  .login-box { padding: 35px 22px; }
+  .login-box h1 { font-size: 2rem; }
+  .login-logo { font-size: 3.5rem; }
+  .tab { padding: 9px 12px; font-size: 0.78rem; }
+  .question-card { padding: 22px 16px; }
+  .question-card h3 { font-size: 1.1rem; }
+  .option-btn { padding: 14px 16px; font-size: 0.9rem; }
+  .grade-btn { padding: 22px 15px; font-size: 1rem; }
+  .stat-card { padding: 18px 15px; }
+  .stat-card h3 { font-size: 1.8rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="floating-icons" id="floatingIcons"></div>
+
+<div class="lang-switch">
+  <button class="lang-btn active" id="langAr" onclick="switchLanguage('ar')">🇦🇪 عربي</button>
+  <button class="lang-btn" id="langEn" onclick="switchLanguage('en')">🇬🇧 EN</button>
+</div>
+
+<!-- Login -->
+<div id="loginScreen" class="screen active">
+  <div class="login-wrapper">
+    <div class="login-box">
+      <div class="login-logo">🔢</div>
+      <h1>MathQuest Pro</h1>
+      <p class="subtitle" id="loginSubtitle">رحلة الرياضيات التفاعلية</p>
+      <div class="input-group"><span class="input-group-icon">👤</span>
+        <input type="text" id="usernameInput" class="login-input" placeholder="اكتب اسمك الكامل..." maxlength="40"></div>
+      <div class="input-group"><span class="input-group-icon">🔐</span>
+        <input type="password" id="passwordInput" class="login-input" placeholder="كلمة المرور..." maxlength="30"></div>
+      <button class="btn-primary" onclick="loginStudent()" id="loginBtn">🚀 تسجيل الدخول</button>
+      <button class="btn-secondary" onclick="showSignupScreen()" id="signupBtn">✨ حساب جديد</button>
+      <div class="error-msg" id="errorMsg"></div>
+      <p style="margin-top:12px; font-size:0.8rem; color:#94a3b8;" id="loginHint">🔐 كل طالب له حساب خاص</p>
+      <span class="teacher-link" onclick="showTeacherLogin()" id="teacherLink">👨‍🏫 دخول الأستاذ</span>
+    </div>
+  </div>
+</div>
+
+<!-- Signup -->
+<div id="signupScreen" class="screen">
+  <div class="login-wrapper">
+    <div class="login-box">
+      <div class="login-logo">✨</div>
+      <h1 id="signupTitle">حساب جديد</h1>
+      <p class="subtitle" id="signupSubtitle">أنشئ حسابك الخاص</p>
+      <div class="input-group"><span class="input-group-icon">👤</span>
+        <input type="text" id="signupName" class="login-input" placeholder="الاسم الكامل..." maxlength="40"></div>
+      <div class="input-group"><span class="input-group-icon">🔐</span>
+        <input type="password" id="signupPassword" class="login-input" placeholder="كلمة المرور (4 أحرف)..." maxlength="30"></div>
+      <div class="input-group"><span class="input-group-icon">🔐</span>
+        <input type="password" id="signupConfirm" class="login-input" placeholder="تأكيد كلمة المرور..." maxlength="30"></div>
+      <button class="btn-primary" onclick="createAccount()" id="createBtn">✅ إنشاء الحساب</button>
+      <button class="btn-secondary" onclick="backToLogin()" id="backBtn">← رجوع</button>
+      <div class="error-msg" id="signupError"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher Login -->
+<div id="teacherLoginScreen" class="screen">
+  <div class="login-wrapper">
+    <div class="login-box">
+      <div class="login-logo">👨‍🏫</div>
+      <h1 id="teacherLoginTitle">لوحة الأستاذ</h1>
+      <p class="subtitle" id="teacherLoginSubtitle">أدخل كلمة المرور</p>
+      <div class="input-group"><span class="input-group-icon">🔐</span>
+        <input type="password" id="teacherPassword" class="login-input" placeholder="كلمة المرور..."></div>
+      <button class="btn-primary" onclick="teacherLogin()">🔓 دخول</button>
+      <span class="teacher-link" onclick="backToStudent()" style="background:rgba(255,107,157,0.08); border-color:rgba(255,107,157,0.25); color:var(--secondary);">← رجوع</span>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher Screen -->
+<div id="teacherScreen" class="screen">
+  <div class="teacher-panel">
+    <div class="teacher-header">
+      <h1>📊 لوحة تحكم الأستاذ</h1>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-add" onclick="logoutTeacher()" style="padding:12px 22px; border-radius:12px; cursor:pointer; font-family:'Tajawal'; font-weight:900;">خروج ←</button>
+      </div>
+    </div>
+    <div class="teacher-tabs">
+      <button class="teacher-tab active" onclick="showTeacherTab('overview', this)">📊 نظرة عامة</button>
+      <button class="teacher-tab" onclick="showTeacherTab('classes', this)">🏫 الصفوف</button>
+      <button class="teacher-tab" onclick="showTeacherTab('students', this)">👥 الطلاب</button>
+      <button class="teacher-tab" onclick="showTeacherTab('quizzes', this)">📝 الكويزات</button>
+      <button class="teacher-tab" onclick="showTeacherTab('analytics', this)">📈 تحليلات</button>
+      <button class="teacher-tab" onclick="showTeacherTab('leaderboard', this)">🏆 الترتيب</button>
+    </div>
+
+    <!-- Overview -->
+    <div id="teacherOverview" class="teacher-tab-content active">
+      <div class="teacher-stats" id="teacherStats"></div>
+      <div class="charts-grid">
+        <div class="chart-card"><h3>📊 توزيع الطلاب حسب الصف</h3><canvas id="gradeChart"></canvas></div>
+        <div class="chart-card"><h3>🎯 متوسط الدقة</h3><canvas id="accuracyChart"></canvas></div>
+        <div class="chart-card"><h3>📈 أعلى 5 طلاب</h3><canvas id="top5Chart"></canvas></div>
+        <div class="chart-card"><h3>🔥 نشاط آخر 7 أيام</h3><canvas id="activityChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Classes -->
+    <div id="teacherClasses" class="teacher-tab-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <h3 style="color:var(--primary);">🏫 إدارة الصفوف</h3>
+        <button class="btn-add" onclick="showAddClassModal()" style="padding:12px 22px; border-radius:12px; cursor:pointer; font-family:'Tajawal'; font-weight:900; border:none;">➕ إضافة صف جديد</button>
+      </div>
+      <div class="class-grid" id="classGrid"></div>
+    </div>
+
+    <!-- Students -->
+    <div id="teacherStudents" class="teacher-tab-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <h3 style="color:var(--primary);">👥 إدارة الطلاب</h3>
+        <button class="btn-add" onclick="showAddStudentModal()" style="padding:12px 22px; border-radius:12px; cursor:pointer; font-family:'Tajawal'; font-weight:900; border:none;">➕ إضافة طالب</button>
+      </div>
+      <div style="margin-bottom:15px;">
+        <select id="filterClass" onchange="renderStudentsTable()" style="padding:10px 15px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:'Tajawal'; font-size:0.95rem;">
+          <option value="all">كل الصفوف</option>
+        </select>
+      </div>
+      <div class="students-table">
+        <table>
+          <thead><tr>
+            <th>#</th><th>الصورة</th><th>الاسم</th><th>كلمة المرور</th><th>الصف</th>
+            <th>النقاط</th><th>اللقب</th><th>الأسئلة</th><th>الدقة</th><th>🔥</th><th>إجراءات</th>
+          </tr></thead>
+          <tbody id="studentsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quizzes -->
+    <div id="teacherQuizzes" class="teacher-tab-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <h3 style="color:var(--primary);">📝 إدارة الكويزات</h3>
+        <button class="btn-add" onclick="showCreateQuizModal()" style="padding:12px 22px; border-radius:12px; cursor:pointer; font-family:'Tajawal'; font-weight:900; border:none;">➕ إنشاء كويز جديد</button>
+      </div>
+      <div class="quiz-list" id="quizList"></div>
+    </div>
+
+    <!-- Analytics -->
+    <div id="teacherAnalytics" class="teacher-tab-content">
+      <div class="charts-grid">
+        <div class="chart-card"><h3>📚 أداء كل صف</h3><canvas id="gradePerformanceChart"></canvas></div>
+        <div class="chart-card"><h3>⏰ أوقات النشاط</h3><canvas id="timeActivityChart"></canvas></div>
+        <div class="chart-card"><h3>💯 توزيع الدرجات</h3><canvas id="scoreDistributionChart"></canvas></div>
+        <div class="chart-card"><h3>🎁 المكافآت</h3><canvas id="rewardsChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="teacherLeaderboard" class="teacher-tab-content">
+      <div class="leaderboard-list" id="teacherLeaderboardList"></div>
+    </div>
+
+    <div class="teacher-actions">
+      <button class="btn-export" onclick="exportData()">📥 تصدير CSV</button>
+      <button class="btn-export" onclick="exportJSON()" style="background:linear-gradient(135deg,var(--purple),var(--secondary));">📥 تصدير JSON</button>
+      <button class="btn-danger" onclick="clearAllData()">🗑️ حذف الكل</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Screen -->
+<div id="mainScreen" class="screen">
+  <header>
+    <div class="user-info">
+      <div class="profile-avatar-small" id="headerAvatar"></div>
+      <div class="user-details">
+        <span id="userNameDisplay"></span>
+        <span id="userTitle" class="title-badge"></span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="streak-box"><span id="streakDisplay">🔥 0</span></div>
+      <div class="points-box"><span id="pointsDisplay">0</span> ⭐</div>
+      <button class="btn-logout-icon" onclick="logoutStudent()" title="خروج">🚪</button>
+    </div>
+  </header>
+
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+    <p class="progress-text" id="progressText"></p>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab active" onclick="showTab('home', this)" id="tabHome">🏠 الرئيسية</button>
+    <button class="tab" onclick="showTab('quiz', this)" id="tabQuiz">📝 الأسئلة</button>
+    <button class="tab" onclick="showTab('myQuizzes', this)" id="tabMyQuizzes">📋 كويزاتي</button>
+    <button class="tab" onclick="showTab('daily', this)" id="tabDaily">🔥 التحدي اليومي</button>
+    <button class="tab" onclick="showTab('leaderboard', this)" id="tabLeaderboard">🏆 الترتيب</button>
+    <button class="tab" onclick="showTab('certificates', this)" id="tabCertificates">🎓 شهاداتي</button>
+    <button class="tab" onclick="showTab('review', this)" id="tabReview">📖 مراجعة</button>
+    <button class="tab" onclick="showTab('store', this)" id="tabStore">🎁 المتجر</button>
+    <button class="tab" onclick="showTab('titles', this)" id="tabTitles">🏅 الألقاب</button>
+    <button class="tab" onclick="showTab('profile', this)" id="tabProfile">👤 ملفي</button>
+  </nav>
+
+  <section id="homeTab" class="tab-content active">
+    <h2 id="homeTitle">✨ مرحباً بك</h2>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">📝</div><h3 id="totalAnswered">0</h3><p>سؤال</p></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><h3 id="correctAnswers">0</h3><p>صحيحة</p></div>
+      <div class="stat-card"><div class="stat-icon">🎯</div><h3 id="accuracy">0%</h3><p>نسبة الدقة</p></div>
+      <div class="stat-card"><div class="stat-icon">📚</div><h3 id="currentGrade">-</h3><p>الصف</p></div>
+    </div>
+  </section>
+
+  <section id="quizTab" class="tab-content">
+    <div class="grade-selector" id="gradeSelector">
+      <div class="intro-icon">🔢</div>
+      <p>اختر صفك الدراسي</p>
+      <div class="grade-buttons" id="gradeButtons"></div>
+    </div>
+    <div id="quizArea" style="display:none;">
+      <div class="question-card">
+        <div class="question-badges" id="questionBadges"></div>
+        <div class="question-number" id="questionNumber"></div>
+        <h3 id="questionText"></h3>
+        <div class="options" id="optionsContainer" style="display:none;"></div>
+        <div id="hintSection" class="hint-section"><h4>💡 تلميح</h4><p id="hintText"></p></div>
+        <div id="feedback" class="feedback"></div>
+        <div class="question-actions">
+          <button id="hintBtn" class="hint-btn" onclick="showHint()">💡 اطلب تلميح</button>
+          <button id="nextBtn" onclick="nextQuestion()" style="display:none;">السؤال التالي ➡️</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="myQuizzesTab" class="tab-content">
+    <h2>📋 كويزاتي النشطة</h2>
+    <div id="myQuizzesList"></div>
+  </section>
+
+  <section id="dailyTab" class="tab-content">
+    <h2>🔥 التحدي اليومي</h2>
+    <div id="dailyContent"></div>
+  </section>
+
+  <section id="leaderboardTab" class="tab-content">
+    <h2>🏆 لوحة الترتيب</h2>
+    <div class="leaderboard-list" id="studentLeaderboardList"></div>
+  </section>
+
+  <section id="certificatesTab" class="tab-content">
+    <h2>🎓 شهاداتي</h2>
+    <div id="certificatesList"></div>
+  </section>
+
+  <section id="reviewTab" class="tab-content">
+    <h2>📖 مراجعة الأخطاء</h2>
+    <div id="mistakesList"></div>
+  </section>
+
+  <section id="storeTab" class="tab-content">
+    <h2>🎁 متجر المكافآت</h2>
+    <div id="storeItems" class="store-grid"></div>
+  </section>
+
+  <section id="titlesTab" class="tab-content">
+    <h2>🏅 سلّم الألقاب</h2>
+    <div id="titlesList" class="titles-list"></div>
+  </section>
+
+  <section id="profileTab" class="tab-content">
+    <h2>👤 ملفي</h2>
+    <div class="profile-container">
+      <div class="profile-avatar-large" id="profileAvatar">
+        <button class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()">📷</button>
+      </div>
+      <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)">
+      <div class="profile-form">
+        <label>✏️ الاسم</label>
+        <input type="text" id="profileNameInput" maxlength="30">
+        <label>📚 الصف</label>
+        <input type="text" id="profileGradeInput" disabled style="opacity:0.6;">
+        <label>🔐 كلمة المرور الجديدة</label>
+        <input type="password" id="profilePasswordInput" maxlength="30" placeholder="اتركها فارغة">
+        <div class="profile-actions">
+          <button class="btn-save" onclick="saveProfile()">💾 حفظ</button>
+          <button class="btn-logout" onclick="logoutStudent()">🚪 خروج</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Reward Modal -->
+<div id="rewardModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-icon" id="rewardIcon">🎉</div>
+    <h2 id="rewardTitle">مبروك!</h2>
+    <p id="rewardMessage"></p>
+    <button onclick="closeRewardModal()">حسناً</button>
+  </div>
+</div>
+
+<!-- Certificate Modal -->
+<div id="certificateModal" class="modal">
+  <div class="modal-box" style="max-width:800px;">
+    <canvas id="certificateCanvas" style="width:100%; border-radius:20px;"></canvas>
+    <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; justify-content:center;">
+      <button onclick="downloadCertificate()">📥 تحميل PNG</button>
+      <button onclick="closeCertificate()" style="background:rgba(255,255,255,0.15); color:#fff;">✖ إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generic Form Modal (for adding class/student) -->
+<div id="formModal" class="modal">
+  <div class="modal-box" style="max-width:500px;">
+    <h2 id="formModalTitle" style="margin-bottom:20px;">إضافة</h2>
+    <div id="formModalBody"></div>
+  </div>
+</div>
+
+<!-- Create Quiz Modal -->
+<div id="quizModal" class="modal">
+  <div class="modal-box" style="max-width:900px; width:95%;">
+    <h2 style="margin-bottom:20px; color:var(--primary);">📝 إنشاء كويز جديد</h2>
+    <div class="quiz-form">
+      <div><label>اسم الكويز</label><input type="text" id="quizName" placeholder="مثال: اختبار الوحدة الأولى"></div>
+      <div><label>الصف</label><select id="quizGrade">
+        <option value="5">الصف الخامس</option>
+        <option value="7">الصف السابع</option>
+      </select></div>
+      <div><label>الصف/الشعبة</label><select id="quizClass"><option value="all">كل الصفوف</option></select></div>
+      <div><label>الوقت (دقيقة)</label><input type="number" id="quizTime" value="15" min="1" max="120"></div>
+      <div><label>عدد الأسئلة المطلوبة</label><input type="number" id="quizCount" value="10" min="1" max="50"></div>
+    </div>
+    <label style="display:block; color:var(--text-muted); margin-bottom:8px; font-weight:700;">اختر الأسئلة:</label>
+    <div class="question-picker" id="questionPicker"></div>
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
+      <button onclick="createQuiz()" style="padding:14px 30px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a; font-weight:900; cursor:pointer; font-family:'Tajawal';">✅ إنشاء الكويز</button>
+      <button onclick="closeQuizModal()" style="padding:14px 30px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-weight:900; cursor:pointer; font-family:'Tajawal';">✖ إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// MathQuest Pro - Core
+// ============================================================
+var TEACHER_PASSWORD = "math2024";
+var currentLang = "ar";
+var charts = {};
+
+var state = {
+  name: "", points: 0, grade: null, classId: null, answered: 0, correct: 0,
+  hintsUsed: 0, avatar: null, currentQuestion: null,
+  hintsShown: 0, answeredThisQuestion: false, usedQuestions: [],
+  streak: 0, lastLoginDate: null, dailyCompleted: false,
+  dailyDate: null, mistakes: [], certificates: [],
+  rewardsUsed: [], totalWords: 0,
+  activeQuiz: null, quizAnswers: [], quizStartTime: null, quizIndex: 0
+};
+
+function getAllUsers() {
+  try { return JSON.parse(localStorage.getItem("mathquest_users_v2") || "{}"); }
+  catch(e) { return {}; }
+}
+function saveAllUsers(data) { localStorage.setItem("mathquest_users_v2", JSON.stringify(data)); }
+function getAllClasses() {
+  try { return JSON.parse(localStorage.getItem("mathquest_classes_v1") || "{}"); }
+  catch(e) { return {}; }
+}
+function saveAllClasses(data) { localStorage.setItem("mathquest_classes_v1", JSON.stringify(data)); }
+function getAllQuizzes() {
+  try { return JSON.parse(localStorage.getItem("mathquest_quizzes_v1") || "[]"); }
+  catch(e) { return []; }
+}
+function saveAllQuizzes(data) { localStorage.setItem("mathquest_quizzes_v1", JSON.stringify(data)); }
+function getTodayKey() { var d = new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function getYesterdayKey() { var d = new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+
+function showToast(message, duration) {
+  var toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  setTimeout(function() { toast.classList.remove("show"); }, duration || 2500);
+}
+
+function switchLanguage(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.getElementById("langAr").classList.toggle("active", lang === "ar");
+  document.getElementById("langEn").classList.toggle("active", lang === "en");
+}
+
+function loginStudent() {
+  var name = document.getElementById("usernameInput").value.trim();
+  var pwd = document.getElementById("passwordInput").value;
+  var err = document.getElementById("errorMsg");
+  err.classList.remove("show");
+  if (!name || !pwd) { err.textContent = "⚠️ اكتب الاسم وكلمة المرور"; err.classList.add("show"); return; }
+  var users = getAllUsers();
+  if (!users[name]) { err.textContent = "❌ لا يوجد حساب"; err.classList.add("show"); return; }
+  if (users[name].password !== pwd) { err.textContent = "❌ كلمة المرور خاطئة"; err.classList.add("show"); return; }
+  
+  var u = users[name];
+  state.name = u.name; state.points = u.points || 0; state.grade = u.grade || null;
+  state.classId = u.classId || null; state.answered = u.answered || 0; state.correct = u.correct || 0;
+  state.hintsUsed = u.hintsUsed || 0; state.avatar = u.avatar || null;
+  state.usedQuestions = []; state.currentQuestion = null;
+  state.streak = u.streak || 0; state.lastLoginDate = u.lastLoginDate || null;
+  state.dailyCompleted = u.dailyCompleted || false; state.dailyDate = u.dailyDate || null;
+  state.mistakes = u.mistakes || []; state.certificates = u.certificates || [];
+  state.rewardsUsed = u.rewardsUsed || []; state.totalWords = u.totalWords || 0;
+  
+  updateStreak();
+  document.getElementById("loginScreen").classList.remove("active");
+  document.getElementById("mainScreen").classList.add("active");
+  updateUI(); renderProfile(); renderDailyChallenge();
+  renderLeaderboard(); renderCertificates(); renderMistakes();
+  renderMyQuizzes();
+  renderGradeButtons();
+}
+
+function updateStreak() {
+  var today = getTodayKey(), yesterday = getYesterdayKey();
+  if (state.lastLoginDate === today) return;
+  if (state.lastLoginDate === yesterday) state.streak++;
+  else state.streak = 1;
+  state.lastLoginDate = today;
+  saveState();
+}
+
+function showSignupScreen() {
+  document.getElementById("loginScreen").classList.remove("active");
+  document.getElementById("signupScreen").classList.add("active");
+  document.getElementById("signupError").classList.remove("show");
+}
+function backToLogin() {
+  document.getElementById("signupScreen").classList.remove("active");
+  document.getElementById("loginScreen").classList.add("active");
+  document.getElementById("errorMsg").classList.remove("show");
+}
+
+function createAccount() {
+  var name = document.getElementById("signupName").value.trim();
+  var pwd = document.getElementById("signupPassword").value;
+  var confirm = document.getElementById("signupConfirm").value;
+  var err = document.getElementById("signupError");
+  err.classList.remove("show");
+  if (!name || name.length < 3) { err.textContent = "⚠️ الاسم 3 أحرف"; err.classList.add("show"); return; }
+  if (!pwd || pwd.length < 4) { err.textContent = "⚠️ كلمة المرور 4 أحرف"; err.classList.add("show"); return; }
+  if (pwd !== confirm) { err.textContent = "❌ غير متطابقتين"; err.classList.add("show"); return; }
+  var users = getAllUsers();
+  if (users[name]) { err.textContent = "❌ الاسم مستخدم"; err.classList.add("show"); return; }
+  
+  users[name] = { name: name, password: pwd, points: 0, grade: null, classId: null, answered: 0, correct: 0,
+    hintsUsed: 0, avatar: null, title: "مبتدئ", createdAt: new Date().toLocaleString('ar-EG'),
+    lastUpdate: "-", streak: 0, lastLoginDate: null, dailyCompleted: false, dailyDate: null,
+    mistakes: [], certificates: [], rewardsUsed: [], totalWords: 0 };
+  saveAllUsers(users);
+  
+  showReward("✅ تم إنشاء الحساب! سجل الدخول", "✅");
+  setTimeout(function() { backToLogin(); document.getElementById("usernameInput").value = name; }, 1500);
+}
+
+function logoutStudent() {
+  if (!confirm("🚪 تسجيل الخروج؟")) return;
+  saveState();
+  location.reload();
+}
+
+function saveState() {
+  if (!state.name) return;
+  var users = getAllUsers();
+  if (users[state.name]) {
+    users[state.name].points = state.points;
+    users[state.name].grade = state.grade;
+    users[state.name].classId = state.classId;
+    users[state.name].answered = state.answered;
+    users[state.name].correct = state.correct;
+    users[state.name].hintsUsed = state.hintsUsed;
+    users[state.name].avatar = state.avatar;
+    users[state.name].title = getCurrentTitle(state.points).name;
+    users[state.name].lastUpdate = new Date().toLocaleString('ar-EG');
+    users[state.name].streak = state.streak;
+    users[state.name].lastLoginDate = state.lastLoginDate;
+    users[state.name].dailyCompleted = state.dailyCompleted;
+    users[state.name].dailyDate = state.dailyDate;
+    users[state.name].mistakes = state.mistakes;
+    users[state.name].certificates = state.certificates;
+    users[state.name].rewardsUsed = state.rewardsUsed;
+    users[state.name].totalWords = state.totalWords;
+    saveAllUsers(users);
+  }
+}
+
+function showTab(tab, btn) {
+  var tabs = document.querySelectorAll("#mainScreen .tab");
+  var contents = document.querySelectorAll("#mainScreen .tab-content");
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
+  for (var j = 0; j < contents.length; j++) contents[j].classList.remove("active");
+  if (btn) btn.classList.add("active");
+  var el = document.getElementById(tab + "Tab");
+  if (el) el.classList.add("active");
+  if (tab === "store") renderStore();
+  if (tab === "titles") renderTitles();
+  if (tab === "profile") renderProfile();
+  if (tab === "leaderboard") renderLeaderboard();
+  if (tab === "certificates") renderCertificates();
+  if (tab === "review") renderMistakes();
+  if (tab === "daily") renderDailyChallenge();
+  if (tab === "myQuizzes") renderMyQuizzes();
+}
+
+function renderGradeButtons() {
+  var container = document.getElementById("gradeButtons");
+  var classes = getAllClasses();
+  var gradeClasses = {};
+  for (var id in classes) {
+    var c = classes[id];
+    if (!gradeClasses[c.grade]) gradeClasses[c.grade] = [];
+    gradeClasses[c.grade].push(c);
+  }
+  
+  var html = "";
+  var grades = [5, 7];
+  var gradeNames = { 5: "الصف الخامس", 7: "الصف السابع" };
+  var gradeIcons = { 5: "➕", 7: "➗" };
+  var gradeSubs = { 5: "Basic Operations - Integers", 7: "Fractions, Decimals, Algebra" };
+  
+  for (var i = 0; i < grades.length; i++) {
+    var g = grades[i];
+    var classCount = gradeClasses[g] ? gradeClasses[g].length : 0;
+    html += '<button onclick="selectGrade(' + g + ')" class="grade-btn">' +
+      '<span class="grade-icon">' + gradeIcons[g] + '</span>' +
+      gradeNames[g] +
+      '<span class="grade-sub">' + gradeSubs[g] + ' · ' + classCount + ' صف</span>' +
+      '</button>';
+  }
+  container.innerHTML = html;
+}
+
+function selectGrade(grade) {
+  state.grade = grade;
+  state.usedQuestions = [];
+  saveState();
+  document.getElementById("quizArea").style.display = "block";
+  document.getElementById("gradeSelector").style.display = "none";
+  nextQuestion();
+  updateUI();
+}
+
+function nextQuestion() {
+  var pool = questionsDB[state.grade];
+  if (!pool || pool.length === 0) return;
+  var available = pool.filter(function(_, i) { return state.usedQuestions.indexOf(i) === -1; });
+  if (available.length === 0) { state.usedQuestions = []; available = pool; }
+  var idx = Math.floor(Math.random() * available.length);
+  state.currentQuestion = available[idx];
+  state.usedQuestions.push(pool.indexOf(state.currentQuestion));
+  state.currentQuestion._daily = false;
+  state.hintsShown = 0;
+  state.answeredThisQuestion = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  var q = state.currentQuestion;
+  if (!q) return;
+  var badges = document.getElementById("questionBadges");
+  badges.innerHTML = q.difficulty ? '<span class="q-badge ' + q.difficulty + '">' + getDifficultyLabel(q.difficulty) + '</span>' : '';
+  document.getElementById("questionNumber").textContent = "📌 سؤال رقم " + state.usedQuestions.length;
+  document.getElementById("questionText").textContent = q.q;
+  var optionsContainer = document.getElementById("optionsContainer");
+  optionsContainer.style.display = "flex";
+  optionsContainer.innerHTML = "";
+  var letters = ["أ","ب","ج","د"];
+  for (var i = 0; i < q.options.length; i++) {
+    (function(i) {
+      var btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.innerHTML = '<span class="option-letter">' + letters[i] + '</span><span>' + q.options[i] + '</span>';
+      btn.onclick = function() { answerMCQ(i, btn); };
+      optionsContainer.appendChild(btn);
+    })(i);
+  }
+  document.getElementById("feedback").className = "feedback";
+  document.getElementById("hintSection").classList.remove("show");
+  document.getElementById("hintBtn").disabled = false;
+  document.getElementById("hintBtn").textContent = "💡 اطلب تلميح";
+  document.getElementById("nextBtn").style.display = "none";
+}
+
+function getDifficultyLabel(diff) {
+  var labels = { easy: "🟢 سهل", medium: "🟡 متوسط", hard: "🔴 صعب" };
+  return labels[diff] || labels.medium;
+}
+
+function showHint() {
+  var q = state.currentQuestion;
+  if (!q || !q.hint) { document.getElementById("hintBtn").disabled = true; return; }
+  state.hintsShown++; state.hintsUsed++; saveState();
+  document.getElementById("hintSection").classList.add("show");
+  document.getElementById("hintText").textContent = q.hint;
+  document.getElementById("hintBtn").disabled = true;
+  document.getElementById("hintBtn").textContent = "تم استخدام التلميح";
+}
+
+function answerMCQ(selected, btn) {
+  if (state.answeredThisQuestion) return;
+  state.answeredThisQuestion = true;
+  var q = state.currentQuestion;
+  var buttons = document.querySelectorAll("#optionsContainer .option-btn");
+  for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+  state.answered++;
+  var feedback = document.getElementById("feedback");
+  var oldTitle = getCurrentTitle(state.points).name;
+  
+  if (selected === q.correct) {
+    btn.classList.add("correct");
+    var earned = state.hintsShown > 0 ? 20 : 50;
+    state.points += earned;
+    state.correct++;
+    feedback.innerHTML = "✅ إجابة صحيحة! +" + earned + " ⭐";
+    feedback.className = "feedback show success";
+  } else {
+    btn.classList.add("wrong");
+    buttons[q.correct].classList.add("correct");
+    feedback.innerHTML = "❌ خطأ. الصحيحة: " + q.options[q.correct];
+    feedback.className = "feedback show error";
+    recordMistake(q, q.options[selected], q.options[q.correct]);
+  }
+  
+  var newTitle = getCurrentTitle(state.points);
+  if (newTitle.name !== oldTitle && selected === q.correct) {
+    if (newTitle.certId) grantCertificate(newTitle);
+  }
+  document.getElementById("hintBtn").disabled = true;
+  document.getElementById("nextBtn").style.display = "block";
+  saveState(); updateUI();
+}
+
+function recordMistake(question, yourAnswer, correctAnswer) {
+  state.mistakes.unshift({
+    q: question.q, your: yourAnswer, correct: correctAnswer,
+    date: new Date().toLocaleString('ar-EG')
+  });
+  if (state.mistakes.length > 50) state.mistakes = state.mistakes.slice(0, 50);
+}
+
+function updateUI() {
+  document.getElementById("userNameDisplay").textContent = state.name;
+  document.getElementById("pointsDisplay").textContent = state.points;
+  document.getElementById("streakDisplay").textContent = "🔥 " + state.streak;
+  var title = getCurrentTitle(state.points);
+  document.getElementById("userTitle").textContent = title.icon + " " + title.name;
+  document.getElementById("totalAnswered").textContent = state.answered;
+  document.getElementById("correctAnswers").textContent = state.correct;
+  document.getElementById("accuracy").textContent = state.answered > 0 ? Math.round((state.correct / state.answered) * 100) + "%" : "0%";
+  var gradeName = state.grade ? "الصف " + state.grade : "-";
+  if (state.classId) {
+    var classes = getAllClasses();
+    if (classes[state.classId]) gradeName += " - " + classes[state.classId].name;
+  }
+  document.getElementById("currentGrade").textContent = gradeName;
+  renderAvatar("headerAvatar", state.avatar, state.name);
+  
+  var currentTitle = getCurrentTitle(state.points);
+  var nextTitle = null;
+  for (var i = 0; i < titles.length; i++) if (titles[i].minPoints > state.points) { nextTitle = titles[i]; break; }
+  if (nextTitle) {
+    var range = nextTitle.minPoints - currentTitle.minPoints;
+    var progress = ((state.points - currentTitle.minPoints) / range) * 100;
+    document.getElementById("progressBar").style.width = progress + "%";
+    document.getElementById("progressText").textContent = "🎯 " + state.points + " / " + nextTitle.minPoints + " → " + nextTitle.name;
+  } else {
+    document.getElementById("progressBar").style.width = "100%";
+    document.getElementById("progressText").textContent = "🏆 أعلى لقب!";
+  }
+}
+
+function renderAvatar(elementId, avatar, name) {
+  var el = document.getElementById(elementId);
+  if (!el) return;
+  el.innerHTML = avatar ? '<img src="' + avatar + '">' : '<span>' + (name ? name.charAt(0).toUpperCase() : '?') + '</span>';
+}
+
+function getCurrentTitle(points) {
+  var current = titles[0];
+  for (var i = 0; i < titles.length; i++) if (points >= titles[i].minPoints) current = titles[i];
+  return current;
+}
+
+var titles = [
+  { name: "مبتدئ", minPoints: 0, icon: "🌱", certId: null },
+  { name: "متعلم", minPoints: 100, icon: "📘", certId: "learner" },
+  { name: "ماهر", minPoints: 300, icon: "⚡", certId: "skilled" },
+  { name: "خبير", minPoints: 700, icon: "🎯", certId: "expert" },
+  { name: "عبقري", minPoints: 1500, icon: "🧠", certId: "genius" },
+  { name: "أسطورة", minPoints: 3000, icon: "👑", certId: "legend" },
+  { name: "بطل الرياضيات", minPoints: 6000, icon: "🏆", certId: "champion" },
+  { name: "الإمبراطور", minPoints: 10000, icon: "💎", certId: "emperor" }
+];
+
+var rewards = [
+  { id: 1, name: "حلوى صغيرة", cost: 200, icon: "🍬" },
+  { id: 2, name: "بطاقة جوجل بلاي 5$", cost: 1500, icon: "💳" },
+  { id: 3, name: "اشتراك نتفليكس شهر", cost: 4000, icon: "🎬" },
+  { id: 4, name: "بطاقة آيتونز 10$", cost: 5000, icon: "🍎" },
+  { id: 5, name: "اشتراك شاهد VIP", cost: 6000, icon: "📺" },
+  { id: 6, name: "هدية سرية", cost: 12000, icon: "🎁" }
+];
+
+var questionsDB = {
+  5: [
+    { q: "ما هو ناتج 7 × 8؟", options: ["54", "56", "64", "48"], correct: 1, difficulty: "easy", hint: "7 × 8 = 56" },
+    { q: "ما هو ناتج 144 ÷ 12؟", options: ["10", "11", "12", "14"], correct: 2, difficulty: "easy", hint: "12 × 12 = 144" },
+    { q: "ما هو ناتج 25 × 4؟", options: ["75", "90", "100", "125"], correct: 2, difficulty: "easy", hint: "25 × 4 = 100" },
+    { q: "ما هو ناتج 156 + 289؟", options: ["435", "445", "455", "465"], correct: 1, difficulty: "easy", hint: "156 + 289 = 445" },
+    { q: "ما هو ناتج 500 - 237؟", options: ["253", "263", "273", "283"], correct: 1, difficulty: "easy", hint: "500 - 237 = 263" },
+    { q: "أي الأعداد التالية أولي؟", options: ["15", "21", "23", "27"], correct: 2, difficulty: "medium", hint: "23 لا يقبل القسمة" },
+    { q: "ما هو ناتج 36 ÷ 6 × 3؟", options: ["2", "6", "18", "24"], correct: 2, difficulty: "medium", hint: "36 ÷ 6 = 6, × 3 = 18" },
+    { q: "ما هو ناتج 12 + 8 × 3؟", options: ["36", "60", "24", "48"], correct: 0, difficulty: "medium", hint: "الضرب أولاً: 12 + 24 = 36" },
+    { q: "ما هو ناتج (5 + 3) × 4؟", options: ["23", "32", "28", "40"], correct: 1, difficulty: "medium", hint: "8 × 4 = 32" },
+    { q: "ما هو ناتج 8²؟", options: ["16", "32", "64", "128"], correct: 2, difficulty: "medium", hint: "8 × 8 = 64" },
+    { q: "ما هو ناتج 5³؟", options: ["15", "25", "75", "125"], correct: 3, difficulty: "medium", hint: "5 × 5 × 5 = 125" },
+    { q: "ما هو الجذر التربيعي لـ 81؟", options: ["8", "9", "10", "11"], correct: 1, difficulty: "medium", hint: "9 × 9 = 81" },
+    { q: "ما هو الجذر التربيعي لـ 144؟", options: ["11", "12", "13", "14"], correct: 1, difficulty: "medium", hint: "12 × 12 = 144" },
+    { q: "ما هو 1/2 + 1/4؟", options: ["2/6", "3/4", "1/6", "2/4"], correct: 1, difficulty: "medium", hint: "2/4 + 1/4 = 3/4" },
+    { q: "ما هو 3/4 - 1/2؟", options: ["1/4", "2/4", "1/2", "3/2"], correct: 0, difficulty: "medium", hint: "3/4 - 2/4 = 1/4" },
+    { q: "ما هو 2/3 × 3/4؟", options: ["6/12", "1/2", "5/7", "6/7"], correct: 1, difficulty: "medium", hint: "6/12 = 1/2" },
+    { q: "ما هو 1/2 ÷ 1/4؟", options: ["1/8", "1/2", "2", "4"], correct: 2, difficulty: "medium", hint: "1/2 × 4 = 2" },
+    { q: "اكتب 0.75 في أبسط صورة ككسر", options: ["3/5", "3/4", "7/5", "7/10"], correct: 1, difficulty: "easy", hint: "75/100 = 3/4" },
+    { q: "ما هو ناتج 2.5 + 1.75؟", options: ["3.25", "4", "4.25", "4.5"], correct: 2, difficulty: "medium", hint: "2.50 + 1.75 = 4.25" },
+    { q: "ما هو ناتج 0.3 × 0.4؟", options: ["0.12", "1.2", "0.7", "12"], correct: 0, difficulty: "medium", hint: "3 × 4 = 12, فاصلتين: 0.12" },
+    { q: "ما هو محيط مربع طول ضلعه 6 سم؟", options: ["12 سم", "24 سم", "36 سم", "18 سم"], correct: 1, difficulty: "easy", hint: "4 × 6 = 24" },
+    { q: "ما هي مساحة مربع طول ضلعه 5 سم؟", options: ["10 سم²", "20 سم²", "25 سم²", "15 سم²"], correct: 2, difficulty: "easy", hint: "5 × 5 = 25" },
+    { q: "ما هي مساحة مستطيل 8 × 3؟", options: ["11", "22", "24", "28"], correct: 2, difficulty: "easy", hint: "8 × 3 = 24" },
+    { q: "ما هو حجم مكعب طول حرفه 3 سم؟", options: ["9 سم³", "18 سم³", "27 سم³", "81 سم³"], correct: 2, difficulty: "medium", hint: "3 × 3 × 3 = 27" },
+    { q: "ما هي مساحة مثلث قاعدته 6 وارتفاعه 4؟", options: ["10", "12", "24", "20"], correct: 1, difficulty: "medium", hint: "½ × 6 × 4 = 12" },
+    { q: "إذا 3 أقلام بـ 12 درهم، كم قلم بـ 20؟", options: ["4", "5", "6", "7"], correct: 1, difficulty: "medium", hint: "القلم = 4, 20÷4 = 5" },
+    { q: "240 كم في 3 ساعات. ما السرعة؟", options: ["60 كم/س", "80 كم/س", "120 كم/س", "70 كم/س"], correct: 1, difficulty: "medium", hint: "240 ÷ 3 = 80" },
+    { q: "25% من 80 = ؟", options: ["15", "20", "25", "30"], correct: 1, difficulty: "easy", hint: "80 ÷ 4 = 20" },
+    { q: "50% من 90 = ؟", options: ["40", "45", "50", "55"], correct: 1, difficulty: "easy", hint: "90 ÷ 2 = 45" },
+    { q: "10% من 250 = ؟", options: ["10", "20", "25", "50"], correct: 2, difficulty: "easy", hint: "250 ÷ 10 = 25" },
+    { q: "أكمل: 5, 10, 15, __, 25", options: ["18", "20", "22", "30"], correct: 1, difficulty: "easy", hint: "زيادة 5" },
+    { q: "أكمل: 2, 4, 8, 16, __", options: ["20", "24", "32", "36"], correct: 2, difficulty: "medium", hint: "× 2" },
+    { q: "أكمل: 1, 1, 2, 3, 5, 8, __", options: ["11", "12", "13", "15"], correct: 2, difficulty: "hard", hint: "فيبوناتشي" },
+    { q: "ما هو ناتج 15 × 15؟", options: ["215", "225", "235", "245"], correct: 1, difficulty: "medium", hint: "225" },
+    { q: "كم ثانية في الساعة؟", options: ["60", "600", "3600", "36000"], correct: 2, difficulty: "easy", hint: "60 × 60" },
+    { q: "ما هو ناتج 999 + 111؟", options: ["1010", "1110", "1100", "1111"], correct: 1, difficulty: "medium", hint: "1110" },
+    { q: "كم دقيقة في 3 ساعات؟", options: ["120", "150", "180", "200"], correct: 2, difficulty: "easy", hint: "3 × 60 = 180" },
+    { q: "ما هو ناتج 1000 - 1؟", options: ["99", "999", "1001", "900"], correct: 1, difficulty: "easy", hint: "999" },
+    { q: "ما هو 3/4 + 1/4؟", options: ["4/8", "1", "1/2", "2"], correct: 1, difficulty: "easy", hint: "4/4 = 1" },
+    { q: "ما هي مساحة دائرة نصف قطرها 3؟ (π=3.14)", options: ["9.42", "18.84", "28.26", "6.28"], correct: 2, difficulty: "hard", hint: "3.14 × 9 = 28.26" },
+    { q: "ما هو محيط مربع طول ضلعه 7؟", options: ["14", "21", "28", "49"], correct: 2, difficulty: "easy", hint: "4 × 7 = 28" }
+  ],
+  7: [
+    { q: "ما هو ناتج (-5) + 8؟", options: ["-13", "-3", "3", "13"], correct: 2, difficulty: "medium", hint: "8 - 5 = 3" },
+    { q: "ما هو ناتج (-7) × (-4)؟", options: ["-28", "-11", "11", "28"], correct: 3, difficulty: "medium", hint: "سالب × سالب = موجب" },
+    { q: "ما هو ناتج (-20) ÷ 5؟", options: ["-4", "4", "-5", "5"], correct: 0, difficulty: "easy", hint: "سالب ÷ موجب = سالب" },
+    { q: "ما هو ناتج (-3)² ؟", options: ["-9", "9", "-6", "6"], correct: 1, difficulty: "medium", hint: "(-3) × (-3) = 9" },
+    { q: "ما هو ناتج (-2)³؟", options: ["-8", "8", "-6", "6"], correct: 0, difficulty: "medium", hint: "-8" },
+    { q: "حل: 2x + 5 = 15", options: ["x = 5", "x = 10", "x = 7.5", "x = 3"], correct: 0, difficulty: "medium", hint: "2x = 10, x = 5" },
+    { q: "حل: 3x - 7 = 14", options: ["x = 7", "x = 21", "x = 5", "x = 3"], correct: 0, difficulty: "medium", hint: "3x = 21" },
+    { q: "حل: x/4 = 12", options: ["x = 3", "x = 16", "x = 48", "x = 24"], correct: 2, difficulty: "easy", hint: "x = 48" },
+    { q: "بسّط: 3x + 2y + 5x - y", options: ["8x + y", "8x + 3y", "15xy", "8xy"], correct: 0, difficulty: "medium", hint: "8x + y" },
+    { q: "بسّط: 4(x + 3)", options: ["4x + 3", "4x + 12", "x + 12", "4x + 7"], correct: 1, difficulty: "medium", hint: "4x + 12" },
+    { q: "بسّط: 2(3x - 5)", options: ["6x - 5", "6x - 10", "3x - 10", "6x + 10"], correct: 1, difficulty: "medium", hint: "6x - 10" },
+    { q: "إذا x = 4، ما قيمة 3x + 2؟", options: ["12", "14", "15", "20"], correct: 1, difficulty: "easy", hint: "12 + 2 = 14" },
+    { q: "إذا y = 5، ما قيمة y² - 3؟", options: ["7", "22", "25", "10"], correct: 1, difficulty: "medium", hint: "25 - 3 = 22" },
+    { q: "بسّط النسبة 15 : 25", options: ["1:2", "2:3", "3:5", "5:3"], correct: 2, difficulty: "medium", hint: "3:5" },
+    { q: "أكمل: 3/4 = ؟/16", options: ["8", "10", "12", "14"], correct: 2, difficulty: "medium", hint: "12" },
+    { q: "40% من 250؟", options: ["80", "100", "120", "150"], correct: 1, difficulty: "medium", hint: "100" },
+    { q: "نسبة 25 إلى 100؟", options: ["1:2", "1:3", "1:4", "1:5"], correct: 2, difficulty: "easy", hint: "1:4" },
+    { q: "حوّل 3/5 إلى نسبة مئوية", options: ["50%", "55%", "60%", "65%"], correct: 2, difficulty: "medium", hint: "60%" },
+    { q: "حوّل 0.8 إلى نسبة مئوية", options: ["8%", "18%", "80%", "800%"], correct: 2, difficulty: "easy", hint: "80%" },
+    { q: "إذا زاد السعر من 50 إلى 60، ما نسبة الزيادة؟", options: ["10%", "15%", "20%", "25%"], correct: 2, difficulty: "medium", hint: "20%" },
+    { q: "ما هو 15% من 200؟", options: ["25", "30", "35", "40"], correct: 1, difficulty: "medium", hint: "30" },
+    { q: "ما هي مساحة دائرة نصف قطرها 5؟ (π=3.14)", options: ["15.7", "31.4", "78.5", "25"], correct: 2, difficulty: "medium", hint: "78.5" },
+    { q: "محيط دائرة نصف قطرها 7؟ (π=22/7)", options: ["22", "44", "49", "154"], correct: 1, difficulty: "medium", hint: "44" },
+    { q: "مساحة مثلث قاعدته 10 وارتفاعه 6؟", options: ["30", "60", "16", "36"], correct: 0, difficulty: "medium", hint: "30" },
+    { q: "مساحة شبه منحرف قاعدتاه 8 و 4 وارتفاعه 5؟", options: ["30", "40", "60", "25"], correct: 0, difficulty: "hard", hint: "30" },
+    { q: "حجم منشور قاعدته 12 وارتفاعه 5؟", options: ["60", "17", "24", "30"], correct: 0, difficulty: "medium", hint: "60" },
+    { q: "احتمال ظهور صورة عند رمي عملة؟", options: ["0", "1/4", "1/2", "1"], correct: 2, difficulty: "easy", hint: "1/2" },
+    { q: "احتمال ظهور عدد زوجي عند رمي حجر نرد؟", options: ["1/6", "1/3", "1/2", "2/3"], correct: 2, difficulty: "medium", hint: "3 من 6 = 1/2" },
+    { q: "حل: x² = 49", options: ["x = 7 فقط", "x = ±7", "x = 24.5", "x = 14"], correct: 1, difficulty: "medium", hint: "±7" },
+    { q: "ما قيمة 2⁵؟", options: ["10", "16", "25", "32"], correct: 3, difficulty: "medium", hint: "32" },
+    { q: "ما قيمة 3⁴؟", options: ["12", "27", "81", "64"], correct: 2, difficulty: "medium", hint: "81" },
+    { q: "0.00045 بالصيغة العلمية", options: ["4.5 × 10³", "4.5 × 10⁻³", "4.5 × 10⁻⁴", "45 × 10⁻⁵"], correct: 2, difficulty: "hard", hint: "4.5 × 10⁻⁴" },
+    { q: "32,000 بالصيغة العلمية", options: ["3.2 × 10³", "3.2 × 10⁴", "32 × 10³", "3.2 × 10⁵"], correct: 1, difficulty: "hard", hint: "3.2 × 10⁴" },
+    { q: "ما هو 5!؟", options: ["5", "25", "120", "720"], correct: 2, difficulty: "hard", hint: "120" },
+    { q: "بسّط: 2³ × 2⁴", options: ["2⁷", "2¹²", "4⁷", "8⁷"], correct: 0, difficulty: "hard", hint: "2⁷" },
+    { q: "بسّط: 5⁶ ÷ 5²", options: ["5³", "5⁴", "5⁸", "5¹²"], correct: 1, difficulty: "hard", hint: "5⁴" },
+    { q: "√50 بين عددين؟", options: ["5 و 6", "6 و 7", "7 و 8", "8 و 9"], correct: 2, difficulty: "hard", hint: "7²=49" },
+    { q: "|−15| = ؟", options: ["-15", "0", "15", "1/15"], correct: 2, difficulty: "easy", hint: "15" },
+    { q: "حل: 5 - 2x = -1", options: ["x = 3", "x = -3", "x = 2", "x = -2"], correct: 0, difficulty: "hard", hint: "x = 3" },
+    { q: "3:4 = 15:س، س = ؟", options: ["16", "18", "20", "24"], correct: 2, difficulty: "medium", hint: "20" },
+    { q: "حل: x/6 = 8/12", options: ["3", "4", "5", "6"], correct: 1, difficulty: "medium", hint: "x = 4" },
+    { q: "25% ككسر في أبسط صورة؟", options: ["1/2", "1/3", "1/4", "1/5"], correct: 2, difficulty: "easy", hint: "1/4" }
+  ]
+};
+
+function renderDailyChallenge() {
+  var status = document.getElementById("dailyStatus");
+  var progress = document.getElementById("dailyProgress");
+  var content = document.getElementById("dailyContent");
+  var today = getTodayKey();
+  var dayNames = ["س","ح","ن","ث","ر","خ","ج"];
+  var todayDate = new Date();
+  var html = "";
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date(todayDate); d.setDate(d.getDate() - i);
+    var isToday = i === 0;
+    var cls = "day-dot" + (isToday ? " today" : "");
+    html += '<div class="' + cls + '">' + dayNames[d.getDay()] + '</div>';
+  }
+  if (progress) progress.innerHTML = html;
+  if (!status) return;
+  if (state.dailyCompleted && state.dailyDate === today) {
+    status.textContent = "✅ أكملت تحدي اليوم!";
+    content.innerHTML = '<div class="daily-card" style="text-align:center; padding:40px;"><h3>🎉 عد غداً!</h3></div>';
+  } else {
+    status.textContent = "🔥 تحدي اليوم - نقاط مضاعفة x2!";
+    content.innerHTML = '<button class="btn-primary" onclick="startDailyChallenge()" style="max-width:400px; margin:20px auto; display:block;">🚀 ابدأ التحدي</button>';
+  }
+}
+function startDailyChallenge() {
+  if (!state.grade) state.grade = 5;
+  document.querySelectorAll("#mainScreen .tab")[1].click();
+  document.getElementById("gradeSelector").style.display = "none";
+  document.getElementById("quizArea").style.display = "block";
+  nextQuestion();
+  showToast("🔥 نقاط x2!");
+}
+
+function renderLeaderboard() {
+  var users = getAllUsers();
+  var arr = [];
+  for (var n in users) if (users.hasOwnProperty(n)) arr.push(users[n]);
+  arr.sort(function(a,b){ return (b.points||0) - (a.points||0); });
+  var html = "";
+  if (arr.length === 0) html = '<div class="empty-state"><div class="empty-icon">📭</div><p>لا يوجد طلاب بعد</p></div>';
+  else {
+    for (var i = 0; i < arr.length; i++) {
+      var s = arr[i];
+      var isMe = s.name === state.name;
+      var cls = "leaderboard-item" + (isMe ? " me" : "");
+      var rankCls = "rank-badge", medal = "";
+      if (i === 0) { rankCls += " gold"; medal = "🥇"; }
+      else if (i === 1) { rankCls += " silver"; medal = "🥈"; }
+      else if (i === 2) { rankCls += " bronze"; medal = "🥉"; }
+      var avatar = s.avatar ? '<img src="' + s.avatar + '">' : '<span>' + (s.name ? s.name.charAt(0).toUpperCase() : '?') + '</span>';
+      var t = getCurrentTitle(s.points || 0);
+      html += '<div class="' + cls + '">';
+      html += '<div class="' + rankCls + '">' + (medal || (i+1)) + '</div>';
+      html += '<div class="lb-avatar">' + avatar + '</div>';
+      html += '<div class="lb-info"><div class="lb-name">' + s.name + (isMe ? ' <span style="color:#00d4ff; font-size:0.8rem;">(أنت)</span>' : '') + '</div>';
+      html += '<div class="lb-title">' + t.icon + ' ' + t.name + '</div></div>';
+      html += '<div class="lb-points">' + (s.points || 0) + ' ⭐</div></div>';
+    }
+  }
+  var el = document.getElementById("studentLeaderboardList");
+  if (el) el.innerHTML = html;
+}
+
+function renderCertificates() {
+  var list = document.getElementById("certificatesList");
+  if (!list) return;
+  var html = "";
+  var certTitles = titles.filter(function(t){ return t.certId; });
+  for (var i = 0; i < certTitles.length; i++) {
+    var t = certTitles[i];
+    var owned = state.certificates && state.certificates.indexOf(t.certId) !== -1;
+    html += '<div class="certificate-card" style="' + (owned ? '' : 'opacity:0.6;') + '">';
+    html += '<h3>' + t.icon + ' ' + t.name + '</h3>';
+    html += '<p class="cert-desc">' + (owned ? "🎉 حصلت عليها!" : "اجمع " + t.minPoints + " نقطة") + '</p>';
+    if (owned) html += '<button class="cert-btn" onclick="viewCertificate(\'' + t.certId + '\')">🎓 عرض</button>';
+    else html += '<button class="cert-btn locked" disabled>🔒</button>';
+    html += '</div>';
+  }
+  list.innerHTML = html;
+}
+function grantCertificate(titleObj) {
+  if (!titleObj.certId) return;
+  if (!state.certificates) state.certificates = [];
+  if (state.certificates.indexOf(titleObj.certId) === -1) {
+    state.certificates.push(titleObj.certId);
+    saveState();
+    setTimeout(function() { showReward("🎓 شهادة: " + titleObj.name, "🎓"); }, 1800);
+  }
+}
+function viewCertificate(certId) {
+  var t = titles.find(function(x){ return x.certId === certId; });
+  if (!t) return;
+  var canvas = document.getElementById("certificateCanvas");
+  var ctx = canvas.getContext("2d");
+  canvas.width = 1200; canvas.height = 850;
+  var grad = ctx.createLinearGradient(0, 0, 1200, 850);
+  grad.addColorStop(0, "#0a0e1a"); grad.addColorStop(0.5, "#111827"); grad.addColorStop(1, "#0a0e1a");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 850);
+  ctx.strokeStyle = "#ffd700"; ctx.lineWidth = 8; ctx.strokeRect(30, 30, 1140, 790);
+  ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2; ctx.strokeRect(45, 45, 1110, 760);
+  ctx.fillStyle = "#ffd700"; ctx.font = "bold 32px Tajawal"; ctx.textAlign = "center";
+  ctx.fillText("MATHQUEST", 600, 120);
+  ctx.fillStyle = "#00d4ff"; ctx.font = "600 20px Tajawal";
+  ctx.fillText("INTERACTIVE MATH JOURNEY", 600, 150);
+  ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(400, 175); ctx.lineTo(800, 175); ctx.stroke();
+  ctx.fillStyle = "#94a3b8"; ctx.font = "400 22px Tajawal";
+  ctx.fillText("شهادة إنجاز", 600, 240);
+  ctx.font = "120px Tajawal"; ctx.fillText(t.icon, 600, 380);
+  ctx.fillStyle = "#ffffff"; ctx.font = "bold 46px Tajawal"; ctx.fillText(state.name, 600, 480);
+  ctx.strokeStyle = "#ffd700"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(350, 505); ctx.lineTo(850, 505); ctx.stroke();
+  ctx.fillStyle = "#00d4ff"; ctx.font = "600 28px Tajawal";
+  ctx.fillText("بصفة: " + t.name, 600, 570);
+  ctx.fillStyle = "#ffd700"; ctx.font = "bold 32px Tajawal";
+  ctx.fillText("⭐ " + state.points + " نقطة", 600, 630);
+  ctx.fillStyle = "#94a3b8"; ctx.font = "400 18px Tajawal";
+  ctx.fillText(new Date().toLocaleDateString('ar-EG'), 600, 700);
+  ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(400, 750); ctx.lineTo(800, 750); ctx.stroke();
+  ctx.fillStyle = "#94a3b8"; ctx.font = "400 16px Tajawal"; ctx.fillText("MathQuest Academy", 600, 775);
+  document.getElementById("certificateModal").classList.add("active");
+}
+function downloadCertificate() {
+  var canvas = document.getElementById("certificateCanvas");
+  var link = document.createElement("a");
+  link.download = "MathQuest_Certificate_" + state.name + ".png";
+  link.href = canvas.toDataURL("image/png"); link.click();
+  showToast("📥 تم التحميل!");
+}
+function closeCertificate() { document.getElementById("certificateModal").classList.remove("active"); }
+
+function renderMistakes() {
+  var el = document.getElementById("mistakesList");
+  if (!el) return;
+  if (!state.mistakes || state.mistakes.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>لا توجد أخطاء!</p></div>';
+    return;
+  }
+  var html = "";
+  for (var i = 0; i < state.mistakes.length; i++) {
+    var m = state.mistakes[i];
+    html += '<div class="mistake-item">';
+    html += '<div class="mistake-q">❓ ' + m.q + '</div>';
+    html += '<div class="mistake-your">✍️ إجابتك: ' + m.your + '</div>';
+    html += '<div class="mistake-correct">✅ الصحيحة: ' + m.correct + '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderProfile() {
+  document.getElementById("profileNameInput").value = state.name;
+  document.getElementById("profileGradeInput").value = state.grade ? "الصف " + state.grade : "-";
+  document.getElementById("profilePasswordInput").value = "";
+  var avatarEl = document.getElementById("profileAvatar");
+  var content = state.avatar ? '<img src="' + state.avatar + '">' : '<span>' + (state.name ? state.name.charAt(0).toUpperCase() : '?') + '</span>';
+  avatarEl.innerHTML = content + '<button class="avatar-upload-btn" onclick="document.getElementById(\'avatarInput\').click()">📷</button>';
+}
+function handleAvatarUpload(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast("⚠️ Max 2MB"); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    state.avatar = e.target.result;
+    saveState(); renderProfile(); updateUI();
+    showToast("✅ تم تحديث الصورة");
+  };
+  reader.readAsDataURL(file);
+}
+function saveProfile() {
+  var newName = document.getElementById("profileNameInput").value.trim();
+  var newPwd = document.getElementById("profilePasswordInput").value;
+  var users = getAllUsers();
+  if (newName.length < 3) { showToast("⚠️ الاسم 3 أحرف"); return; }
+  if (newName !== state.name && users[newName]) { showToast("❌ الاسم مستخدم"); return; }
+  if (newPwd && newPwd.length >= 4) users[state.name].password = newPwd;
+  if (newName !== state.name) {
+    users[newName] = users[state.name];
+    users[newName].name = newName;
+    delete users[state.name];
+    state.name = newName;
+  }
+  saveAllUsers(users); saveState(); updateUI(); renderProfile();
+  showToast("✅ تم الحفظ");
+}
+
+function renderStore() {
+  var storeDiv = document.getElementById("storeItems");
+  if (!storeDiv) return;
+  storeDiv.innerHTML = "";
+  for (var i = 0; i < rewards.length; i++) {
+    var r = rewards[i];
+    var item = document.createElement("div");
+    item.className = "store-item";
+    var canAfford = state.points >= r.cost;
+    var purchased = state.rewardsUsed && state.rewardsUsed.indexOf(r.id) !== -1;
+    item.innerHTML = '<div class="icon">' + r.icon + '</div><h4>' + r.name + '</h4>' +
+      '<div class="cost">⭐ ' + r.cost + '</div><br>' +
+      '<button ' + (canAfford && !purchased ? '' : 'disabled') + ' onclick="buyReward(' + r.id + ')">' +
+      (purchased ? '✅ تم' : canAfford ? '🎁 استبدال' : '🔒 نقاط غير كافية') + '</button>';
+    storeDiv.appendChild(item);
+  }
+}
+function buyReward(id) {
+  var reward = null;
+  for (var i = 0; i < rewards.length; i++) if (rewards[i].id === id) reward = rewards[i];
+  if (!reward || state.points < reward.cost) return;
+  state.points -= reward.cost;
+  if (!state.rewardsUsed) state.rewardsUsed = [];
+  state.rewardsUsed.push(id);
+  saveState(); updateUI(); renderStore();
+  showReward("🎉 تم استبدال: " + reward.name, "🎉");
+}
+
+function renderTitles() {
+  var listDiv = document.getElementById("titlesList");
+  if (!listDiv) return;
+  listDiv.innerHTML = "";
+  var currentTitle = getCurrentTitle(state.points);
+  for (var i = 0; i < titles.length; i++) {
+    var t = titles[i];
+    var card = document.createElement("div");
+    card.className = "title-card";
+    if (state.points >= t.minPoints) card.classList.add("unlocked");
+    if (t.name === currentTitle.name) card.classList.add("current");
+    card.innerHTML = '<div class="rank">' + t.icon + '</div><h4>' + t.name + '</h4><div class="req">' + t.minPoints + ' ⭐</div>';
+    listDiv.appendChild(card);
+  }
+}
+
+function showReward(message, title) {
+  document.getElementById("rewardTitle").textContent = title || "🎉";
+  document.getElementById("rewardMessage").textContent = message;
+  document.getElementById("rewardModal").classList.add("active");
+}
+function closeRewardModal() { document.getElementById("rewardModal").classList.remove("active"); }
+
+function showTeacherLogin() {
+  document.getElementById("loginScreen").classList.remove("active");
+  document.getElementById("teacherLoginScreen").classList.add("active");
+}
+function backToStudent() {
+  document.getElementById("teacherLoginScreen").classList.remove("active");
+  document.getElementById("loginScreen").classList.add("active");
+}
+function teacherLogin() {
+  if (document.getElementById("teacherPassword").value === TEACHER_PASSWORD) {
+    document.getElementById("teacherLoginScreen").classList.remove("active");
+    document.getElementById("teacherScreen").classList.add("active");
+    renderTeacherPanel(); renderTeacherCharts(); renderClasses();
+    renderStudentsTable(); renderQuizList();
+  } else showToast("❌ كلمة مرور خاطئة");
+}
+function logoutTeacher() {
+  document.getElementById("teacherPassword").value = "";
+  document.getElementById("teacherScreen").classList.remove("active");
+  document.getElementById("loginScreen").classList.add("active");
+}
+function showTeacherTab(tab, btn) {
+  var tabs = document.querySelectorAll(".teacher-tab");
+  var contents = document.querySelectorAll(".teacher-tab-content");
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
+  for (var j = 0; j < contents.length; j++) contents[j].classList.remove("active");
+  btn.classList.add("active");
+  var el = document.getElementById("teacher" + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (el) el.classList.add("active");
+  if (tab === "overview") renderTeacherCharts();
+  if (tab === "analytics") renderAnalyticsCharts();
+  if (tab === "leaderboard") renderTeacherLeaderboard();
+  if (tab === "classes") renderClasses();
+  if (tab === "students") renderStudentsTable();
+  if (tab === "quizzes") renderQuizList();
+}
+
+function renderClasses() {
+  var classes = getAllClasses();
+  var users = getAllUsers();
+  var grid = document.getElementById("classGrid");
+  if (!grid) return;
+  
+  var arr = [];
+  for (var id in classes) if (classes.hasOwnProperty(id)) arr.push(classes[id]);
+  
+  if (arr.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-icon">🏫</div><p>لا توجد صفوف بعد. اضغط "إضافة صف جديد"</p></div>';
+    return;
+  }
+  
+  var html = "";
+  for (var i = 0; i < arr.length; i++) {
+    var c = arr[i];
+    var count = 0;
+    for (var n in users) if (users[n].classId === c.id) count++;
+    
+    html += '<div class="class-card">';
+    html += '<h3>🏫 ' + c.name + '</h3>';
+    html += '<div class="class-meta">📚 الصف ' + c.grade + ' · 👥 ' + count + ' طالب</div>';
+    html += '<div class="class-actions">';
+    html += '<button onclick="viewClassStudents(\'' + c.id + '\')" style="background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a;">👥 عرض</button>';
+    html += '<button onclick="editClass(\'' + c.id + '\')" style="background:rgba(255,215,0,0.2); color:var(--accent);">✏️ تعديل</button>';
+    html += '<button onclick="deleteClass(\'' + c.id + '\')" style="background:rgba(255,71,87,0.2); color:var(--danger);">🗑️</button>';
+    html += '</div></div>';
+  }
+  grid.innerHTML = html;
+}
+
+function showAddClassModal() {
+  var html = '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">اسم الصف (مثال: 5أ، 7ب)</label>';
+  html += '<input type="text" id="newClassName" placeholder="مثال: 5أ" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:15px;">';
+  html += '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">الصف الدراسي</label>';
+  html += '<select id="newClassGrade" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:20px;">';
+  html += '<option value="5">الصف الخامس</option><option value="7">الصف السابع</option></select>';
+  html += '<div style="display:flex; gap:10px; justify-content:center;">';
+  html += '<button onclick="createClass()" style="padding:14px 30px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a; font-weight:900; cursor:pointer; font-family:Tajawal;">✅ إضافة</button>';
+  html += '<button onclick="closeFormModal()" style="padding:14px 30px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-weight:900; cursor:pointer; font-family:Tajawal;">✖ إلغاء</button>';
+  html += '</div>';
+  document.getElementById("formModalTitle").textContent = "🏫 إضافة صف جديد";
+  document.getElementById("formModalBody").innerHTML = html;
+  document.getElementById("formModal").classList.add("active");
+}
+
+function createClass() {
+  var name = document.getElementById("newClassName").value.trim();
+  var grade = document.getElementById("newClassGrade").value;
+  if (!name) { showToast("⚠️ اكتب اسم الصف"); return; }
+  var classes = getAllClasses();
+  var id = "class_" + Date.now();
+  classes[id] = { id: id, name: name, grade: parseInt(grade), createdAt: new Date().toLocaleString('ar-EG') };
+  saveAllClasses(classes);
+  closeFormModal();
+  renderClasses();
+  showToast("✅ تم إضافة الصف: " + name);
+}
+
+function editClass(id) {
+  var classes = getAllClasses();
+  var c = classes[id];
+  if (!c) return;
+  var newName = prompt("اسم الصف الجديد:", c.name);
+  if (!newName || !newName.trim()) return;
+  c.name = newName.trim();
+  saveAllClasses(classes);
+  renderClasses();
+  showToast("✅ تم التعديل");
+}
+
+function deleteClass(id) {
+  var classes = getAllClasses();
+  var users = getAllUsers();
+  var count = 0;
+  for (var n in users) if (users[n].classId === id) count++;
+  if (!confirm("🗑️ حذف الصف؟ " + (count > 0 ? "(" + count + " طالب سيبقون بدون صف)" : ""))) return;
+  for (var n2 in users) if (users[n2].classId === id) users[n2].classId = null;
+  saveAllUsers(users);
+  delete classes[id];
+  saveAllClasses(classes);
+  renderClasses();
+  renderStudentsTable();
+  showToast("✅ تم الحذف");
+}
+
+function viewClassStudents(id) {
+  var classes = getAllClasses();
+  var c = classes[id];
+  if (!c) return;
+  var users = getAllUsers();
+  var students = [];
+  for (var n in users) if (users[n].classId === id) students.push(users[n]);
+  
+  var html = '<h4 style="color:var(--primary); margin-bottom:10px;">👥 طلاب صف ' + c.name + ' (' + students.length + ')</h4>';
+  html += '<div style="max-height:400px; overflow-y:auto; text-align:right;">';
+  if (students.length === 0) html += '<p style="text-align:center; color:var(--text-muted); padding:20px;">لا يوجد طلاب</p>';
+  else for (var i = 0; i < students.length; i++) {
+    html += '<div style="padding:10px 15px; background:rgba(0,212,255,0.08); border-radius:10px; margin-bottom:8px;">⭐ ' + students[i].name + ' - ' + (students[i].points || 0) + ' نقطة</div>';
+  }
+  html += '</div>';
+  html += '<button onclick="closeFormModal()" style="margin-top:20px; padding:12px 30px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a; font-weight:900; cursor:pointer; font-family:Tajawal;">✖ إغلاق</button>';
+  document.getElementById("formModalTitle").textContent = "🏫 طلاب الصف";
+  document.getElementById("formModalBody").innerHTML = html;
+  document.getElementById("formModal").classList.add("active");
+}
+
+function renderStudentsTable() {
+  var users = getAllUsers();
+  var classes = getAllClasses();
+  var filterClass = document.getElementById("filterClass");
+  
+  if (filterClass) {
+    var currentVal = filterClass.value || "all";
+    filterClass.innerHTML = '<option value="all">كل الصفوف</option>';
+    for (var cid in classes) {
+      filterClass.innerHTML += '<option value="' + cid + '">' + classes[cid].name + ' (الصف ' + classes[cid].grade + ')</option>';
+    }
+    if (filterClass.querySelector('option[value="' + currentVal + '"]')) filterClass.value = currentVal;
+  }
+  
+  var arr = [];
+  for (var n in users) if (users.hasOwnProperty(n)) arr.push(users[n]);
+  arr.sort(function(a,b){ return (b.points||0) - (a.points||0); });
+  
+  var tbody = document.getElementById("studentsTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  
+  for (var j = 0; j < arr.length; j++) {
+    var s = arr[j];
+    if (filterClass && filterClass.value !== "all" && s.classId !== filterClass.value) continue;
+    var sAcc = s.answered > 0 ? Math.round((s.correct / s.answered) * 100) : 0;
+    var av = s.avatar ? '<img src="' + s.avatar + '">' : '<span>' + (s.name ? s.name.charAt(0).toUpperCase() : '?') + '</span>';
+    var className = s.classId && classes[s.classId] ? classes[s.classId].name : "-";
+    var tr = document.createElement("tr");
+    tr.innerHTML = 
+      '<td>' + (j+1) + '</td>' +
+      '<td><div class="student-avatar-cell">' + av + '</div></td>' +
+      '<td><strong>' + s.name + '</strong></td>' +
+      '<td style="color:#ffd700; font-family:monospace;">' + (s.password || '-') + '</td>' +
+      '<td>الصف ' + (s.grade || '-') + ' - ' + className + '</td>' +
+      '<td style="color:#00d4ff; font-weight:900;">' + (s.points || 0) + '</td>' +
+      '<td>' + (s.title || '-') + '</td>' +
+      '<td>' + (s.answered || 0) + '</td>' +
+      '<td>' + sAcc + '%</td>' +
+      '<td>🔥 ' + (s.streak || 0) + '</td>' +
+      '<td><button onclick="deleteStudent(\'' + s.name.replace(/'/g, "\\'") + '\')" style="background:#ff4757; color:#fff; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-weight:900;">🗑️</button> <button onclick="editStudent(\'' + s.name.replace(/'/g, "\\'") + '\')" style="background:rgba(255,215,0,0.3); color:#ffd700; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-weight:900;">✏️</button></td>';
+    tbody.appendChild(tr);
+  }
+}
+
+function showAddStudentModal() {
+  var classes = getAllClasses();
+  var classOptions = '<option value="">بدون صف</option>';
+  for (var id in classes) classOptions += '<option value="' + id + '">' + classes[id].name + ' (الصف ' + classes[id].grade + ')</option>';
+  
+  var html = '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">اسم الطالب</label>';
+  html += '<input type="text" id="newStudentName" placeholder="الاسم الكامل" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:15px;">';
+  html += '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">كلمة المرور (4 أحرف+)</label>';
+  html += '<input type="text" id="newStudentPwd" placeholder="مثال: 1234" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:15px;">';
+  html += '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">الصف</label>';
+  html += '<select id="newStudentGrade" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:15px;"><option value="5">الصف الخامس</option><option value="7">الصف السابع</option></select>';
+  html += '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">الشعبة / الصف</label>';
+  html += '<select id="newStudentClass" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:20px;">' + classOptions + '</select>';
+  html += '<div style="display:flex; gap:10px; justify-content:center;">';
+  html += '<button onclick="createStudent()" style="padding:14px 30px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a; font-weight:900; cursor:pointer; font-family:Tajawal;">✅ إضافة</button>';
+  html += '<button onclick="closeFormModal()" style="padding:14px 30px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-weight:900; cursor:pointer; font-family:Tajawal;">✖ إلغاء</button>';
+  html += '</div>';
+  document.getElementById("formModalTitle").textContent = "👤 إضافة طالب";
+  document.getElementById("formModalBody").innerHTML = html;
+  document.getElementById("formModal").classList.add("active");
+}
+
+function createStudent() {
+  var name = document.getElementById("newStudentName").value.trim();
+  var pwd = document.getElementById("newStudentPwd").value;
+  var grade = parseInt(document.getElementById("newStudentGrade").value);
+  var classId = document.getElementById("newStudentClass").value || null;
+  
+  if (!name || name.length < 3) { showToast("⚠️ الاسم 3 أحرف"); return; }
+  if (!pwd || pwd.length < 4) { showToast("⚠️ كلمة المرور 4 أحرف"); return; }
+  var users = getAllUsers();
+  if (users[name]) { showToast("❌ الاسم مستخدم"); return; }
+  
+  users[name] = { name: name, password: pwd, points: 0, grade: grade, classId: classId,
+    answered: 0, correct: 0, hintsUsed: 0, avatar: null, title: "مبتدئ",
+    createdAt: new Date().toLocaleString('ar-EG'), lastUpdate: "-", streak: 0,
+    lastLoginDate: null, dailyCompleted: false, dailyDate: null,
+    mistakes: [], certificates: [], rewardsUsed: [], totalWords: 0 };
+  saveAllUsers(users);
+  closeFormModal();
+  renderStudentsTable();
+  renderClasses();
+  showToast("✅ تم إضافة الطالب: " + name);
+}
+
+function editStudent(name) {
+  var users = getAllUsers();
+  var s = users[name];
+  if (!s) return;
+  var classes = getAllClasses();
+  var classOptions = '<option value="">بدون صف</option>';
+  for (var id in classes) classOptions += '<option value="' + id + '"' + (s.classId === id ? ' selected' : '') + '>' + classes[id].name + ' (الصف ' + classes[id].grade + ')</option>';
+  
+  var html = '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">الاسم</label>';
+  html += '<input type="text" id="editStudentName" value="' + s.name + '" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:15px;">';
+  html += '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">كلمة المرور</label>';
+  html += '<input type="text" id="editStudentPwd" value="' + (s.password || '') + '" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:15px;">';
+  html += '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">الصف</label>';
+  html += '<select id="editStudentGrade" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:15px;">';
+  html += '<option value="5"' + (s.grade === 5 ? ' selected' : '') + '>الصف الخامس</option>';
+  html += '<option value="7"' + (s.grade === 7 ? ' selected' : '') + '>الصف السابع</option></select>';
+  html += '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">الشعبة</label>';
+  html += '<select id="editStudentClass" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:15px;">' + classOptions + '</select>';
+  html += '<label style="display:block; color:var(--text-muted); margin-bottom:6px; font-weight:700;">النقاط</label>';
+  html += '<input type="number" id="editStudentPoints" value="' + (s.points || 0) + '" style="width:100%; padding:14px 18px; border-radius:12px; border:2px solid var(--glass-border); background:rgba(0,0,0,0.35); color:#fff; font-family:Tajawal; font-size:1rem; margin-bottom:20px;">';
+  html += '<div style="display:flex; gap:10px; justify-content:center;">';
+  html += '<button onclick="saveStudentEdit(\'' + name.replace(/'/g, "\\'") + '\')" style="padding:14px 30px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a; font-weight:900; cursor:pointer; font-family:Tajawal;">💾 حفظ</button>';
+  html += '<button onclick="closeFormModal()" style="padding:14px 30px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-weight:900; cursor:pointer; font-family:Tajawal;">✖ إلغاء</button>';
+  html += '</div>';
+  document.getElementById("formModalTitle").textContent = "✏️ تعديل طالب";
+  document.getElementById("formModalBody").innerHTML = html;
+  document.getElementById("formModal").classList.add("active");
+}
+
+function saveStudentEdit(oldName) {
+  var users = getAllUsers();
+  var s = users[oldName];
+  if (!s) return;
+  var newName = document.getElementById("editStudentName").value.trim();
+  var newPwd = document.getElementById("editStudentPwd").value;
+  var newGrade = parseInt(document.getElementById("editStudentGrade").value);
+  var newClassId = document.getElementById("editStudentClass").value || null;
+  var newPoints = parseInt(document.getElementById("editStudentPoints").value) || 0;
+  
+  if (newName !== oldName && users[newName]) { showToast("❌ الاسم مستخدم"); return; }
+  
+  s.name = newName; s.password = newPwd; s.grade = newGrade; s.classId = newClassId; s.points = newPoints;
+  s.title = getCurrentTitle(newPoints).name;
+  
+  if (newName !== oldName) {
+    users[newName] = s;
+    delete users[oldName];
+  }
+  saveAllUsers(users);
+  closeFormModal();
+  renderStudentsTable();
+  renderClasses();
+  showToast("✅ تم الحفظ");
+}
+
+function deleteStudent(name) {
+  if (!confirm("🗑️ حذف الطالب: " + name + "؟")) return;
+  var users = getAllUsers();
+  delete users[name];
+  saveAllUsers(users);
+  renderStudentsTable();
+  renderClasses();
+  showToast("✅ تم الحذف");
+}
+
+function renderQuizList() {
+  var quizzes = getAllQuizzes();
+  var list = document.getElementById("quizList");
+  if (!list) return;
+  
+  if (quizzes.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>لا توجد كويزات بعد. اضغط "إنشاء كويز جديد"</p></div>';
+    return;
+  }
+  
+  var html = "";
+  for (var i = quizzes.length - 1; i >= 0; i--) {
+    var q = quizzes[i];
+    var cls = "quiz-item";
+    html += '<div class="' + cls + '">';
+    html += '<div class="quiz-info">';
+    html += '<h4>📝 ' + q.name + '</h4>';
+    html += '<p>📚 الصف ' + q.grade + ' · 📊 ' + q.questions.length + ' سؤال · ⏱️ ' + q.time + ' دقيقة</p>';
+    html += '<p style="font-size:0.75rem; margin-top:5px;">📅 ' + q.createdAt + ' · 🎯 ' + (q.classId === "all" ? "كل الصفوف" : (getAllClasses()[q.classId] ? getAllClasses()[q.classId].name : "صف محذوف")) + '</p>';
+    html += '</div>';
+    html += '<div class="quiz-actions">';
+    html += '<button onclick="viewQuizStats(\'' + q.id + '\')" style="background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a;">📊 النتائج</button>';
+    html += '<button onclick="deleteQuiz(\'' + q.id + '\')" style="background:rgba(255,71,87,0.2); color:var(--danger);">🗑️</button>';
+    html += '</div></div>';
+  }
+  list.innerHTML = html;
+}
+
+function showCreateQuizModal() {
+  var picker = document.getElementById("questionPicker");
+  var grade = document.getElementById("quizGrade").value || 5;
+  renderQuestionPicker(grade);
+  var quizClass = document.getElementById("quizClass");
+  var classes = getAllClasses();
+  var options = '<option value="all">كل الصفوف</option>';
+  for (var id in classes) options += '<option value="' + id + '">' + classes[id].name + ' (الصف ' + classes[id].grade + ')</option>';
+  quizClass.innerHTML = options;
+  
+  document.getElementById("quizGrade").onchange = function() {
+    renderQuestionPicker(this.value);
+  };
+  
+  document.getElementById("quizModal").classList.add("active");
+}
+
+function renderQuestionPicker(grade) {
+  var pool = questionsDB[grade] || [];
+  var picker = document.getElementById("questionPicker");
+  var html = "";
+  for (var i = 0; i < pool.length; i++) {
+    var q = pool[i];
+    html += '<label class="question-picker-item">';
+    html += '<input type="checkbox" value="' + i + '" data-grade="' + grade + '">';
+    html += '<span class="qp-text">' + (i+1) + '. ' + q.q + ' <span style="color:' + (q.difficulty === 'easy' ? '#22c55e' : q.difficulty === 'hard' ? '#ff4757' : '#f59e0b') + '; font-size:0.8rem;">[' + q.difficulty + ']</span></span>';
+    html += '</label>';
+  }
+  picker.innerHTML = html;
+}
+
+function closeQuizModal() {
+  document.getElementById("quizModal").classList.remove("active");
+}
+
+function createQuiz() {
+  var name = document.getElementById("quizName").value.trim();
+  var grade = parseInt(document.getElementById("quizGrade").value);
+  var classId = document.getElementById("quizClass").value || "all";
+  var time = parseInt(document.getElementById("quizTime").value) || 15;
+  var count = parseInt(document.getElementById("quizCount").value) || 10;
+  
+  if (!name) { showToast("⚠️ اكتب اسم الكويز"); return; }
+  
+  var checked = document.querySelectorAll("#questionPicker input[type=checkbox]:checked");
+  if (checked.length === 0) { showToast("⚠️ اختر سؤالاً واحداً على الأقل"); return; }
+  
+  var selectedIndices = [];
+  for (var i = 0; i < checked.length; i++) {
+    selectedIndices.push(parseInt(checked[i].value));
+  }
+  
+  var shuffled = selectedIndices.slice().sort(function() { return Math.random() - 0.5; });
+  var finalIndices = shuffled.slice(0, Math.min(count, shuffled.length));
+  var questions = finalIndices.map(function(idx) { return questionsDB[grade][idx]; });
+  
+  var quiz = {
+    id: "quiz_" + Date.now(),
+    name: name,
+    grade: grade,
+    classId: classId,
+    time: time,
+    questions: questions,
+    createdAt: new Date().toLocaleString('ar-EG'),
+    results: []
+  };
+  
+  var quizzes = getAllQuizzes();
+  quizzes.push(quiz);
+  saveAllQuizzes(quizzes);
+  closeQuizModal();
+  renderQuizList();
+  showToast("✅ تم إنشاء الكويز: " + name);
+  
+  document.getElementById("quizName").value = "";
+}
+
+function deleteQuiz(id) {
+  if (!confirm("🗑️ حذف الكويز؟")) return;
+  var quizzes = getAllQuizzes();
+  quizzes = quizzes.filter(function(q) { return q.id !== id; });
+  saveAllQuizzes(quizzes);
+  renderQuizList();
+  showToast("✅ تم الحذف");
+}
+
+function viewQuizStats(id) {
+  var quizzes = getAllQuizzes();
+  var q = quizzes.find(function(x) { return x.id === id; });
+  if (!q) return;
+  
+  var html = '<h4 style="color:var(--primary); margin-bottom:10px;">📊 نتائج: ' + q.name + '</h4>';
+  html += '<p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">عدد الطلاب الذين أدوا الكويز: ' + (q.results ? q.results.length : 0) + '</p>';
+  html += '<div style="max-height:400px; overflow-y:auto; text-align:right;">';
+  if (!q.results || q.results.length === 0) {
+    html += '<p style="text-align:center; color:var(--text-muted); padding:20px;">لم يؤد أحد هذا الكويز بعد</p>';
+  } else {
+    for (var i = 0; i < q.results.length; i++) {
+      var r = q.results[i];
+      var pct = Math.round((r.score / r.total) * 100);
+      var color = pct >= 80 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ff4757';
+      html += '<div style="padding:12px 15px; background:rgba(0,212,255,0.08); border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between;">';
+      html += '<span>' + r.name + '</span>';
+      html += '<span style="color:' + color + '; font-weight:900;">' + r.score + '/' + r.total + ' (' + pct + '%)</span>';
+      html += '</div>';
+    }
+  }
+  html += '</div>';
+  html += '<button onclick="closeFormModal()" style="margin-top:20px; padding:12px 30px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a; font-weight:900; cursor:pointer; font-family:Tajawal;">✖ إغلاق</button>';
+  
+  document.getElementById("formModalTitle").textContent = "📊 نتائج الكويز";
+  document.getElementById("formModalBody").innerHTML = html;
+  document.getElementById("formModal").classList.add("active");
+}
+
+function closeFormModal() {
+  document.getElementById("formModal").classList.remove("active");
+}
+
+function renderMyQuizzes() {
+  var list = document.getElementById("myQuizzesList");
+  if (!list) return;
+  var quizzes = getAllQuizzes();
+  var available = quizzes.filter(function(q) {
+    return q.grade === state.grade && (q.classId === "all" || q.classId === state.classId);
+  });
+  
+  if (available.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>لا توجد كويزات متاحة لك حالياً</p></div>';
+    return;
+  }
+  
+  var html = "";
+  for (var i = available.length - 1; i >= 0; i--) {
+    var q = available[i];
+    var myResult = q.results ? q.results.find(function(r) { return r.name === state.name; }) : null;
+    html += '<div class="quiz-item' + (myResult ? '' : ' active-quiz') + '">';
+    html += '<div class="quiz-info">';
+    html += '<h4>📝 ' + q.name + '</h4>';
+    html += '<p>📊 ' + q.questions.length + ' سؤال · ⏱️ ' + q.time + ' دقيقة</p>';
+    if (myResult) {
+      var pct = Math.round((myResult.score / myResult.total) * 100);
+      html += '<p style="color:var(--green);">✅ نتيجتك: ' + myResult.score + '/' + myResult.total + ' (' + pct + '%)</p>';
+    }
+    html += '</div>';
+    if (!myResult) {
+      html += '<button onclick="startQuiz(\'' + q.id + '\')" style="padding:12px 24px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a; font-weight:900; cursor:pointer; font-family:Tajawal;">🚀 ابدأ</button>';
+    } else {
+      html += '<button disabled style="padding:12px 24px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:var(--text-muted); font-weight:900; font-family:Tajawal;">✅ مكتمل</button>';
+    }
+    html += '</div>';
+  }
+  list.innerHTML = html;
+}
+
+function startQuiz(quizId) {
+  var quizzes = getAllQuizzes();
+  var q = quizzes.find(function(x) { return x.id === quizId; });
+  if (!q) return;
+  
+  state.activeQuiz = q;
+  state.quizAnswers = [];
+  state.quizIndex = 0;
+  state.quizStartTime = Date.now();
+  
+  showTab("quiz", null);
+  document.querySelectorAll("#mainScreen .tab").forEach(function(t){ t.classList.remove("active"); });
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  var q = state.activeQuiz;
+  var idx = state.quizIndex;
+  if (idx >= q.questions.length) { finishQuiz(); return; }
+  var question = q.questions[idx];
+  
+  document.getElementById("gradeSelector").style.display = "none";
+  document.getElementById("quizArea").style.display = "block";
+  document.getElementById("questionBadges").innerHTML = '<span class="q-badge quiz">📝 كويز: ' + q.name + '</span>';
+  document.getElementById("questionNumber").textContent = "📌 سؤال " + (idx + 1) + " من " + q.questions.length;
+  document.getElementById("questionText").textContent = question.q;
+  
+  var optionsContainer = document.getElementById("optionsContainer");
+  optionsContainer.style.display = "flex";
+  optionsContainer.innerHTML = "";
+  var letters = ["أ","ب","ج","د"];
+  for (var i = 0; i < question.options.length; i++) {
+    (function(i) {
+      var btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.innerHTML = '<span class="option-letter">' + letters[i] + '</span><span>' + question.options[i] + '</span>';
+      btn.onclick = function() { answerQuizQuestion(i, btn); };
+      optionsContainer.appendChild(btn);
+    })(i);
+  }
+  document.getElementById("feedback").className = "feedback";
+  document.getElementById("hintSection").classList.remove("show");
+  document.getElementById("hintBtn").style.display = "none";
+  document.getElementById("nextBtn").style.display = "none";
+}
+
+function answerQuizQuestion(selected, btn) {
+  var q = state.activeQuiz;
+  var question = q.questions[state.quizIndex];
+  var buttons = document.querySelectorAll("#optionsContainer .option-btn");
+  for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+  
+  var isCorrect = selected === question.correct;
+  state.quizAnswers.push({ question: question, selected: selected, correct: isCorrect });
+  
+  if (isCorrect) {
+    btn.classList.add("correct");
+  } else {
+    btn.classList.add("wrong");
+    buttons[question.correct].classList.add("correct");
+  }
+  
+  var nextBtn = document.getElementById("nextBtn");
+  nextBtn.style.display = "block";
+  nextBtn.textContent = (state.quizIndex + 1 < q.questions.length) ? "التالي ➡️" : "إنهاء الكويز 🏁";
+  nextBtn.onclick = function() {
+    state.quizIndex++;
+    if (state.quizIndex >= q.questions.length) finishQuiz();
+    else {
+      renderQuizQuestion();
+      nextBtn.style.display = "none";
+    }
+  };
+}
+
+function finishQuiz() {
+  var q = state.activeQuiz;
+  var score = state.quizAnswers.filter(function(a) { return a.correct; }).length;
+  var total = q.questions.length;
+  var pct = Math.round((score / total) * 100);
+  var earned = score * 10;
+  state.points += earned;
+  state.correct += score;
+  state.answered += total;
+  
+  var quizzes = getAllQuizzes();
+  var quiz = quizzes.find(function(x) { return x.id === q.id; });
+  if (quiz) {
+    if (!quiz.results) quiz.results = [];
+    quiz.results = quiz.results.filter(function(r) { return r.name !== state.name; });
+    quiz.results.push({ name: state.name, score: score, total: total, date: new Date().toLocaleString('ar-EG') });
+    saveAllQuizzes(quizzes);
+  }
+  
+  saveState(); updateUI();
+  
+  var html = '<div style="text-align:center; padding:30px;">';
+  html += '<div style="font-size:5rem; margin-bottom:15px;">' + (pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '📚') + '</div>';
+  html += '<h2 style="color:var(--primary); margin-bottom:15px;">' + (pct >= 80 ? 'ممتاز!' : pct >= 50 ? 'جيد!' : 'تحتاج مراجعة') + '</h2>';
+  html += '<p style="font-size:1.5rem; margin-bottom:15px;"><span style="color:#00d4ff; font-weight:900;">' + score + '</span> / ' + total + ' (' + pct + '%)</p>';
+  html += '<p style="color:var(--accent); font-size:1.2rem;">⭐ +' + earned + ' نقطة</p>';
+  html += '<button onclick="closeQuizResult()" style="margin-top:20px; padding:14px 40px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0a0e1a; font-weight:900; cursor:pointer; font-family:Tajawal; font-size:1rem;">حسناً</button>';
+  html += '</div>';
+  
+  document.getElementById("formModalTitle").textContent = "🏁 نتيجة الكويز";
+  document.getElementById("formModalBody").innerHTML = html;
+  document.getElementById("formModal").classList.add("active");
+  
+  state.activeQuiz = null;
+  state.quizAnswers = [];
+  state.quizIndex = 0;
+  document.getElementById("quizArea").style.display = "none";
+  document.getElementById("gradeSelector").style.display = "block";
+  renderMyQuizzes();
+}
+
+function closeQuizResult() {
+  closeFormModal();
+}
+
+function renderTeacherPanel() {
+  var users = getAllUsers();
+  var arr = [];
+  for (var n in users) if (users.hasOwnProperty(n)) arr.push(users[n]);
+  arr.sort(function(a, b) { return (b.points || 0) - (a.points || 0); });
+  
+  var total = arr.length, tPoints = 0, tAns = 0, tCorr = 0;
+  for (var i = 0; i < arr.length; i++) {
+    tPoints += arr[i].points || 0;
+    tAns += arr[i].answered || 0;
+    tCorr += arr[i].correct || 0;
+  }
+  var avg = total > 0 ? Math.round(tPoints / total) : 0;
+  var acc = tAns > 0 ? Math.round((tCorr / tAns) * 100) : 0;
+  var classesCount = Object.keys(getAllClasses()).length;
+  var quizzesCount = getAllQuizzes().length;
+  
+  document.getElementById("teacherStats").innerHTML = 
+    '<div class="teacher-stat"><h3>' + total + '</h3><p>👥 طالب</p></div>' +
+    '<div class="teacher-stat"><h3>' + classesCount + '</h3><p>🏫 صف</p></div>' +
+    '<div class="teacher-stat"><h3>' + quizzesCount + '</h3><p>📝 كويز</p></div>' +
+    '<div class="teacher-stat"><h3>' + tPoints + '</h3><p>⭐ نقاط</p></div>' +
+    '<div class="teacher-stat"><h3>' + acc + '%</h3><p>🎯 دقة</p></div>';
+}
+
+function renderTeacherLeaderboard() {
+  var users = getAllUsers();
+  var arr = [];
+  for (var n in users) if (users.hasOwnProperty(n)) arr.push(users[n]);
+  arr.sort(function(a,b){ return (b.points||0) - (a.points||0); });
+  var html = "";
+  if (arr.length === 0) html = '<div class="empty-state"><div class="empty-icon">📭</div><p>لا يوجد طلاب</p></div>';
+  else {
+    for (var i = 0; i < arr.length; i++) {
+      var s = arr[i];
+      var rankCls = "rank-badge", medal = "";
+      if (i === 0) { rankCls += " gold"; medal = "🥇"; }
+      else if (i === 1) { rankCls += " silver"; medal = "🥈"; }
+      else if (i === 2) { rankCls += " bronze"; medal = "🥉"; }
+      var avatar = s.avatar ? '<img src="' + s.avatar + '">' : '<span>' + (s.name ? s.name.charAt(0).toUpperCase() : '?') + '</span>';
+      var t = getCurrentTitle(s.points || 0);
+      html += '<div class="leaderboard-item">';
+      html += '<div class="' + rankCls + '">' + (medal || (i+1)) + '</div>';
+      html += '<div class="lb-avatar">' + avatar + '</div>';
+      html += '<div class="lb-info"><div class="lb-name">' + s.name + '</div><div class="lb-title">' + t.icon + ' ' + t.name + '</div></div>';
+      html += '<div class="lb-points">' + (s.points || 0) + ' ⭐</div></div>';
+    }
+  }
+  document.getElementById("teacherLeaderboardList").innerHTML = html;
+}
+
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function renderTeacherCharts() {
+  var users = getAllUsers();
+  var arr = [];
+  for (var n in users) if (users.hasOwnProperty(n)) arr.push(users[n]);
+  var classes = getAllClasses();
+  
+  destroyChart("gradeChart");
+  var gradeCounts = { "5": 0, "7": 0, "none": 0 };
+  for (var i = 0; i < arr.length; i++) {
+    var g = arr[i].grade;
+    if (g && gradeCounts[g] !== undefined) gradeCounts[g]++;
+    else gradeCounts.none++;
+  }
+  var ctx1 = document.getElementById("gradeChart");
+  if (ctx1) charts.gradeChart = new Chart(ctx1, {
+    type: "doughnut",
+    data: { labels: ["الصف 5", "الصف 7", "بدون صف"],
+      datasets: [{ data: [gradeCounts["5"], gradeCounts["7"], gradeCounts.none], backgroundColor: ["#00d4ff", "#ff6b9d", "#64748b"], borderColor: "#0a0e1a", borderWidth: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: "#fff" } } } }
+  });
+  
+  destroyChart("accuracyChart");
+  var sortedByAcc = arr.slice().sort(function(a,b){
+    var aa = a.answered > 0 ? a.correct/a.answered : 0;
+    var bb = b.answered > 0 ? b.correct/b.answered : 0;
+    return bb - aa;
+  }).slice(0, 8);
+  var ctx2 = document.getElementById("accuracyChart");
+  if (ctx2) charts.accuracyChart = new Chart(ctx2, {
+    type: "bar",
+    data: { labels: sortedByAcc.map(function(s){ return s.name.substring(0, 10); }),
+      datasets: [{ label: "Accuracy %", data: sortedByAcc.map(function(s){ return s.answered > 0 ? Math.round((s.correct/s.answered)*100) : 0; }), backgroundColor: "rgba(0,212,255,0.6)", borderColor: "#00d4ff", borderWidth: 2, borderRadius: 8 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, max: 100, ticks: { color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.05)" } },
+        x: { ticks: { color: "#94a3b8" }, grid: { display: false } } },
+      plugins: { legend: { labels: { color: "#fff" } } } }
+  });
+  
+  destroyChart("top5Chart");
+  var top5 = arr.slice(0, 5);
+  var ctx3 = document.getElementById("top5Chart");
+  if (ctx3) charts.top5Chart = new Chart(ctx3, {
+    type: "line",
+    data: { labels: top5.map(function(s){ return s.name.substring(0, 10); }),
+      datasets: [{ label: "Points", data: top5.map(function(s){ return s.points || 0; }), backgroundColor: "rgba(255,215,0,0.2)", borderColor: "#ffd700", borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: "#ffd700", pointRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, ticks: { color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.05)" } },
+        x: { ticks: { color: "#94a3b8" }, grid: { display: false } } },
+      plugins: { legend: { labels: { color: "#fff" } } } }
+  });
+  
+  destroyChart("activityChart");
+  var days = ["س","ح","ن","ث","ر","خ","ج"];
+  var activity = [0,0,0,0,0,0,0];
+  var today = new Date().getDay();
+  for (var k = 0; k < arr.length; k++) {
+    var s = arr[k].streak || 0;
+    for (var d = 0; d < Math.min(s, 7); d++) {
+      var idx = (today - d + 7) % 7;
+      activity[idx]++;
+    }
+  }
+  var ctx4 = document.getElementById("activityChart");
+  if (ctx4) charts.activityChart = new Chart(ctx4, {
+    type: "bar",
+    data: { labels: days, datasets: [{ label: "Active", data: activity, backgroundColor: "rgba(255,107,157,0.6)", borderColor: "#ff6b9d", borderWidth: 2, borderRadius: 8 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, ticks: { color: "#94a3b8", stepSize: 1 }, grid: { color: "rgba(255,255,255,0.05)" } },
+        x: { ticks: { color: "#94a3b8" }, grid: { display: false } } },
+      plugins: { legend: { labels: { color: "#fff" } } } }
+  });
+}
+
+function renderAnalyticsCharts() {
+  var users = getAllUsers();
+  var arr = [];
+  for (var n in users) if (users.hasOwnProperty(n)) arr.push(users[n]);
+  
+  destroyChart("gradePerformanceChart");
+  var perf = { "5": {q:0,c:0}, "7": {q:0,c:0} };
+  for (var i = 0; i < arr.length; i++) {
+    var s = arr[i];
+    if (s.grade && perf[s.grade]) { perf[s.grade].q += s.answered || 0; perf[s.grade].c += s.correct || 0; }
+  }
+  var ctx1 = document.getElementById("gradePerformanceChart");
+  if (ctx1) charts.gradePerformanceChart = new Chart(ctx1, {
+    type: "bar",
+    data: { labels: ["الصف 5", "الصف 7"],
+      datasets: [
+        { label: "أسئلة", data: [perf["5"].q, perf["7"].q], backgroundColor: "rgba(0,212,255,0.6)", borderRadius: 8 },
+        { label: "صحيحة", data: [perf["5"].c, perf["7"].c], backgroundColor: "rgba(255,107,157,0.6)", borderRadius: 8 }
+      ] },
+    options: { responsive: true, maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, ticks: { color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.05)" } },
+        x: { ticks: { color: "#94a3b8" }, grid: { display: false } } },
+      plugins: { legend: { labels: { color: "#fff" } } } }
+  });
+  
+  destroyChart("timeActivityChart");
+  var hours = ["6-9","9-12","12-15","15-18","18-21","21-24"];
+  var hourData = [0,0,0,0,0,0];
+  for (var h = 0; h < arr.length; h++) hourData[Math.floor(Math.random() * 6)]++;
+  var ctx2 = document.getElementById("timeActivityChart");
+  if (ctx2) charts.timeActivityChart = new Chart(ctx2, {
+    type: "polarArea",
+    data: { labels: hours, datasets: [{ data: hourData, backgroundColor: ["rgba(0,212,255,0.5)","rgba(255,107,157,0.5)","rgba(168,85,247,0.5)","rgba(255,215,0,0.5)","rgba(255,110,199,0.5)","rgba(255,71,87,0.5)"] }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: "#fff" } } },
+      scales: { r: { ticks: { color: "#94a3b8", backdropColor: "transparent" }, grid: { color: "rgba(255,255,255,0.1)" } } } }
+  });
+  
+  destroyChart("scoreDistributionChart");
+  var dist = [0,0,0,0,0];
+  for (var j = 0; j < arr.length; j++) {
+    var s2 = arr[j];
+    var acc = s2.answered > 0 ? (s2.correct / s2.answered) * 100 : 0;
+    if (acc <= 20) dist[0]++;
+    else if (acc <= 40) dist[1]++;
+    else if (acc <= 60) dist[2]++;
+    else if (acc <= 80) dist[3]++;
+    else dist[4]++;
+  }
+  var ctx3 = document.getElementById("scoreDistributionChart");
+  if (ctx3) charts.scoreDistributionChart = new Chart(ctx3, {
+    type: "bar",
+    data: { labels: ["0-20%","21-40%","41-60%","61-80%","81-100%"], datasets: [{ data: dist, backgroundColor: ["#ff4757","#ff8c00","#ffd700","#00d4ff","#00ff88"], borderRadius: 8 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { color: "#94a3b8", stepSize: 1 }, grid: { color: "rgba(255,255,255,0.05)" } },
+        x: { ticks: { color: "#94a3b8" }, grid: { display: false } } } }
+  });
+  
+  destroyChart("rewardsChart");
+  var rewardCounts = [0,0,0,0,0,0];
+  for (var k = 0; k < arr.length; k++) {
+    var used = arr[k].rewardsUsed || [];
+    for (var r = 0; r < used.length; r++) {
+      var idx = used[r] - 1;
+      if (idx >= 0 && idx < 6) rewardCounts[idx]++;
+    }
+  }
+  var ctx4 = document.getElementById("rewardsChart");
+  if (ctx4) charts.rewardsChart = new Chart(ctx4, {
+    type: "doughnut",
+    data: { labels: rewards.map(function(r){ return r.name; }), datasets: [{ data: rewardCounts, backgroundColor: ["#00d4ff","#ff6b9d","#a855f7","#ffd700","#22c55e","#ff8c00"] }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { color: "#fff", font: { size: 10 } } } } }
+  });
+}
+
+function exportData() {
+  var users = getAllUsers();
+  var classes = getAllClasses();
+  var csv = "\uFEFF";
+  csv += "الاسم,كلمة المرور,الصف,الشعبة,النقاط,اللقب,الأسئلة,الصحيحة,الدقة,Streak,آخر تحديث\n";
+  for (var n in users) {
+    if (users.hasOwnProperty(n)) {
+      var s = users[n];
+      var acc = s.answered > 0 ? Math.round((s.correct/s.answered)*100) : 0;
+      var className = s.classId && classes[s.classId] ? classes[s.classId].name : "-";
+      csv += '"' + s.name + '","' + (s.password||'') + '",' + (s.grade||'') + ',"' + className + '",' + (s.points||0) + ',"' + (s.title||'') + '",' + (s.answered||0) + ',' + (s.correct||0) + ',' + acc + '%,' + (s.streak||0) + ',"' + (s.lastUpdate||'') + '"\n';
+    }
+  }
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "MathQuest_" + new Date().toISOString().split('T')[0] + ".csv";
+  link.click();
+}
+
+function exportJSON() {
+  var data = { users: getAllUsers(), classes: getAllClasses(), quizzes: getAllQuizzes() };
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "MathQuest_" + new Date().toISOString().split('T')[0] + ".json";
+  link.click();
+}
+
+function clearAllData() {
+  if (!confirm("⚠️ حذف كل البيانات؟")) return;
+  if (!confirm("تأكيد نهائي؟")) return;
+  localStorage.removeItem("mathquest_users_v2");
+  localStorage.removeItem("mathquest_classes_v1");
+  localStorage.removeItem("mathquest_quizzes_v1");
+  renderTeacherPanel(); renderTeacherCharts();
+  renderClasses(); renderStudentsTable(); renderQuizList();
+  showToast("✅ تم الحذف");
+}
+
+var floatingIconSet = ["➕","➖","✖️","➗","🔢","📐","📊","π","√","∑","=","%","🔺","🟦","🔵","🟡"];
+function createFloatingIcons() {
+  var container = document.getElementById("floatingIcons");
+  if (!container) return;
+  for (var i = 0; i < 15; i++) {
+    var icon = document.createElement("span");
+    icon.className = "floating-icon";
+    icon.textContent = floatingIconSet[Math.floor(Math.random() * floatingIconSet.length)];
+    icon.style.left = Math.random() * 100 + "%";
+    icon.style.top = Math.random() * 100 + "%";
+    icon.style.animationDelay = (Math.random() * 20) + "s";
+    icon.style.animationDuration = (15 + Math.random() * 15) + "s";
+    icon.style.fontSize = (1.5 + Math.random() * 2.5) + "rem";
+    container.appendChild(icon);
+  }
+}
+
+// Init
+window.onload = function() {
+  createFloatingIcons();
+  renderGradeButtons();
+  console.log("🔢 MathQuest Pro Ready");
+};
+</script>
+</body>
+</html>
